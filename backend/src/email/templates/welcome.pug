@@ -1,0 +1,39 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    title Welcome to Lexus Trader
+    style.
+      body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background-color: #f9f9f9;
+        padding: 40px;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 20px;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+      }
+  body
+    .container
+      h1 Welcome to Lexus Trader 🎉
+      p Hello #{user.fullname},
+      p We're excited to have you on board. Lexus Trader empowers you as a Professional Trader.
+      p Click below to explore your dashboard:
+      a.btn(href=url) Go to Dashboard
+      p If you have any questions, feel free to reply to this email.
+      p Cheers,  
+      p The Lexus Trader Team

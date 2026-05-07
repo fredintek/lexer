@@ -1,0 +1,38 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    title Verify Your Email
+    style.
+      body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background-color: #f9f9f9;
+        padding: 40px;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 20px;
+        background-color: #4f46e5;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+      }
+  body
+    .container
+      h1 Verify your email🎉
+      p Hello #{user.fullname},
+      p Copy the token here to verify your email
+      p This verification session will expire #{expiration}
+      p #{token}
+      p Cheers,  
+      p The Lexer Trader Team

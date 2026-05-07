@@ -1,0 +1,109 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    title Lexer | Administrative Invitation
+    style.
+      body {
+        font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        background-color: #fafafa;
+        margin: 0;
+        padding: 40px 20px;
+        color: #1a1a1a;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 24px;
+        border: 1px solid #f0f0f0;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+      }
+      .logo {
+        font-weight: 900;
+        letter-spacing: -1px;
+        font-size: 24px;
+        margin-bottom: 30px;
+        text-transform: uppercase;
+        font-style: italic;
+      }
+      .logo span { color: #4f46e5; }
+      h1 {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 16px;
+        letter-spacing: -0.5px;
+      }
+      p {
+        font-size: 14px;
+        line-height: 1.6;
+        color: #666;
+        margin-bottom: 24px;
+      }
+      .credential-box {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+      .label {
+        font-size: 10px;
+        font-weight: 900;
+        text-transform: uppercase;
+        color: #94a3b8;
+        letter-spacing: 1px;
+        margin-bottom: 4px;
+      }
+      .value {
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 16px;
+        font-weight: 700;
+        color: #1e293b;
+      }
+      .btn {
+        display: block;
+        text-align: center;
+        padding: 16px 24px;
+        background-color: #000000;
+        color: #ffffff !important;
+        text-decoration: none;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #f0f0f0;
+        font-size: 11px;
+        color: #94a3b8;
+        text-align: center;
+      }
+      .highlight { color: #ef4444; font-weight: 700; }
+  body
+    .container
+      .logo LEX<span>ER</span>
+      h1 Welcome to the Team, #{fullname}
+      p You have been invited to the Lexer administrative panel. Please use the temporary credentials below to access your account.
+      
+      .credential-box
+        .label Login Email
+        .value #{email}
+        div(style="margin-top: 15px;")
+        .label Temporary Password
+        .value(style="color: #4f46e5;") #{tempPassword}
+      
+      a.btn(href=loginUrl) Secure Login
+      
+      p(style="margin-top: 25px; font-size: 12px;")
+        span.highlight Important: 
+        | You will be required to change this password immediately after your first login for security purposes.
+        
+      .footer
+        p © 2026 Lexer Trading Ltd. Industrial-grade assets.
+        p This is an automated invite. If you did not expect this, please ignore this email.

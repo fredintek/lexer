@@ -1,0 +1,64 @@
+doctype html
+html
+  head
+    meta(charset="UTF-8")
+    title Login Verification Code
+    style.
+      body {
+        font-family: 'Helvetica Neue', sans-serif;
+        background-color: #f4f7fa;
+        padding: 40px;
+        color: #333;
+      }
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      .otp-container {
+        margin: 30px 0;
+        padding: 20px;
+        background-color: #f8fafc;
+        border: 2px dashed #e2e8f0;
+        border-radius: 8px;
+      }
+      .otp-code {
+        font-size: 32px;
+        font-weight: bold;
+        letter-spacing: 8px;
+        color: #4f46e5;
+        margin: 0;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 14px;
+        color: #64748b;
+      }
+      .warning {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-top: 20px;
+        border-top: 1px solid #f1f5f9;
+        padding-top: 20px;
+      }
+  body
+    .container
+      h2 Multi-Factor Authentication 🔐
+      p Hello #{user.fullname},
+      p Use the code below to complete your login. This code is only valid for a short time.
+      
+      .otp-container
+        p.otp-code #{token}
+      
+      p This session will expire in **#{expiration}**.
+      
+      .footer
+        p Cheers,
+        p **The Nexus Broker Team**
+
+      .warning
+        p If you did not attempt to log in, please secure your account immediately or contact support.

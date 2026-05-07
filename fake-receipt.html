@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Arial', sans-serif; color: #333; margin: 0; padding: 40px; background-color: #f9f9f9; }
+        .receipt-card { background: #fff; max-width: 600px; margin: auto; padding: 30px; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .header { border-bottom: 2px solid #0056b3; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { color: #0056b3; font-size: 22px; margin: 0; }
+        .status { color: #28a745; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+        .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f1f1; }
+        .label { color: #777; font-size: 13px; }
+        .value { font-weight: 600; font-size: 14px; text-align: right; }
+        .amount-box { background: #f8fbff; padding: 20px; border-radius: 6px; margin-top: 20px; text-align: center; border: 1px solid #d6e4f3; }
+        .amount-label { font-size: 12px; color: #555; margin-bottom: 5px; }
+        .amount-value { font-size: 28px; font-weight: bold; color: #000; }
+        .footer { margin-top: 30px; font-size: 11px; color: #999; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="receipt-card">
+    <div class="header">
+        <h1>Transfer Dekontu</h1>
+        <div class="status">Başarılı</div>
+    </div>
+
+    <div class="row">
+        <div class="label">İşlem Tarihi</div>
+        <div class="value">03.05.2026 14:30:12</div>
+    </div>
+    <div class="row">
+        <div class="label">Referans No</div>
+        <div class="value">TR-9981273445</div>
+    </div>
+    <div class="row">
+        <div class="label">Gönderen Ad Soyad</div>
+        <div class="value">Phil Foden</div>
+    </div>
+    <div class="row">
+        <div class="label">Alıcı Kurum</div>
+        <div class="value">Lexer Teknoloji Ltd. Şti.</div>
+    </div>
+    <div class="row">
+        <div class="label">Alıcı IBAN</div>
+        <div class="value">TR00 1234 5678 9012 3456 7890 12</div>
+    </div>
+    <div class="row">
+        <div class="label">Açıklama</div>
+        <div class="value">Bakiye Yükleme - AhmetYilmaz92</div>
+    </div>
+
+    <div class="amount-box">
+        <div class="amount-label">Gönderilen Tutar</div>
+        <div class="amount-value">850 TRY</div>
+    </div>
+
+    <div class="footer">
+        Bu belge elektronik ortamda oluşturulmuştur ve ıslak imza gerektirmez. <br>
+        İşlem güvenliği banka güvencesi altındadır.
+    </div>
+</div>
+
+</body>
+</html>

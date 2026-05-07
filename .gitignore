@@ -1,0 +1,148 @@
+# ================= BACKEND ===============
+# compiled output
+/backend/dist
+/backend/node_modules
+/backend/build
+
+# Logs
+/backend/logs
+/backend/*.log
+/backend/npm-debug.log*
+/backend/pnpm-debug.log*
+/backend/yarn-debug.log*
+/backend/yarn-error.log*
+/backend/lerna-debug.log*
+
+# OS
+/backend/.DS_Store
+
+# Tests
+/backend/coverage
+/backend/.nyc_output
+
+# IDEs and editors
+/backend/.idea
+/backend/.project
+/backend/.classpath
+/backend/.c9/
+/backend/*.launch
+/backend/.settings/
+/backend/*.sublime-workspace
+
+# IDE - VSCode
+/backend/.vscode/*
+!/backend/.vscode/settings.json
+!/backend/.vscode/tasks.json
+!/backend/.vscode/launch.json
+!/backend/.vscode/extensions.json
+
+# dotenv environment variable files
+/backend/.env
+/backend/.env.development.local
+/backend/.env.test.local
+/backend/.env.production.local
+/backend/.env.local
+
+# temp directory
+/backend/.temp
+/backend/.tmp
+
+# Runtime data
+/backend/pids
+/backend/*.pid
+/backend/*.seed
+/backend/*.pid.lock
+
+# Diagnostic reports
+/backend/report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+/backend/src/config/firebase-adminsdk.json
+
+
+# =================== WEBSITE ====================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/website/node_modules
+/website/.pnp
+/website/.pnp.*
+/website/.yarn/*
+!/website/.yarn/patches
+!/website/.yarn/plugins
+!/website/.yarn/releases
+!/website/.yarn/versions
+
+# testing
+/website/coverage
+
+# next.js
+/website/.next/
+/website/out/
+
+# production
+/website/build
+
+# misc
+/website/.DS_Store
+/website/*.pem
+
+# debug
+/website/npm-debug.log*
+/website/yarn-debug.log*
+/website/yarn-error.log*
+/website/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+/website/.env*
+
+# vercel
+/website/.vercel
+
+# typescript
+/website/*.tsbuildinfo
+/website/next-env.d.ts
+
+/website/public/firebase-messaging-sw.js
+
+
+# ====================== ADMIN ========================
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/admin/node_modules
+/admin/.pnp
+/admin/.pnp.*
+/admin/.yarn/*
+!/admin/.yarn/patches
+!/admin/.yarn/plugins
+!/admin/.yarn/releases
+!/admin/.yarn/versions
+
+# testing
+/admin/coverage
+
+# next.js
+/admin/.next/
+/admin/out/
+
+# production
+/admin/build
+
+# misc
+/admin/.DS_Store
+/admin/*.pem
+
+# debug
+/admin/npm-debug.log*
+/admin/yarn-debug.log*
+/admin/yarn-error.log*
+/admin/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+/admin/.env*
+
+# vercel
+/admin/.vercel
+
+# typescript
+/admin/*.tsbuildinfo
+/admin/next-env.d.ts
