@@ -19,8 +19,8 @@ services:
     image: phpmyadmin:latest
     container_name: bulls_pma
     restart: always
-    ports:
-      - "8080:80"
+    # ports:
+    #   - "8080:80"
     environment:
       - PMA_HOST=db
     env_file:
@@ -39,8 +39,8 @@ services:
       - ./backend/.env.prod
     volumes:
       - ./backend/src/config/firebase-adminsdk.json:/app/src/config/firebase-adminsdk.json
-    ports:
-      - "8000:11111"
+    # ports:
+    #   - "8000:11111"
     depends_on:
       - db
     networks:
@@ -56,8 +56,8 @@ services:
     restart: always
     env_file:
       - ./website/.env.prod
-    ports:
-      - "4356:3001"
+    # ports:
+    #   - "4356:3001"
     depends_on:
       - backend
     networks:
@@ -73,9 +73,24 @@ services:
     restart: always
     env_file:
       - ./admin/.env.prod
-    ports:
-      - "4345:3000"
+    # ports:
+    #   - "4345:3000"
     depends_on:
+      - backend
+    networks:
+      - bulls_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: bulls_proxy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - website
       - backend
     networks:
       - bulls_network
