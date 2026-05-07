@@ -377,5 +377,7 @@
   "VIEW_STOCKS": "View Stocks",
   "CAT_FAVORITES": "Favorites",
   "PNL": "Profit / Loss",
-  "USER_BALANCE": "User Balance"
+  "USER_BALANCE": "User Balance",
+  "SORT_BY_LOTS": "Sort Lot",
+  "SORT_BY_EQUITY": "Sort Equity"
 }

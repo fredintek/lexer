@@ -101,8 +101,6 @@
 /website/*.tsbuildinfo
 /website/next-env.d.ts
 
-/website/public/firebase-messaging-sw.js
-
 
 # ====================== ADMIN ========================
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.

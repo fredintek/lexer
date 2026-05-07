@@ -1,0 +1,88 @@
+name: Bulls_Yatirim
+
+services:
+  # --- MYSQL DATABASE ---
+  db:
+    image: mysql:8.0
+    container_name: bulls_db
+    restart: always
+    env_file:
+      - ./backend/.env.prod
+    volumes:
+      - bulls_db_data:/var/lib/mysql
+    networks:
+      - bulls_network
+
+  # --- PHPMYADMIN ---
+  # I'll this on at http://your-vps-ip:8080
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: bulls_pma
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=db
+    env_file:
+      - ./backend/.env.prod
+    depends_on:
+      - db
+    networks:
+      - bulls_network
+
+  # --- BACKEND (NestJS) ---
+  backend:
+    build: ./backend
+    container_name: bulls_api
+    restart: always
+    env_file:
+      - ./backend/.env.prod
+    volumes:
+      - ./backend/src/config/firebase-adminsdk.json:/app/src/config/firebase-adminsdk.json
+    ports:
+      - "8000:11111"
+    depends_on:
+      - db
+    networks:
+      - bulls_network
+
+  website:
+    build: 
+      context: ./website
+      args:
+        - NEXT_PUBLIC_BASE_URL=http://localhost:8000
+        - NEXT_PUBLIC_LOGO_DEV_PK=pk_B5TuKjaLRsmUFgVH9u5x2A
+    container_name: bulls_web
+    restart: always
+    env_file:
+      - ./website/.env.prod
+    ports:
+      - "4356:3001"
+    depends_on:
+      - backend
+    networks:
+      - bulls_network
+
+  admin:
+    build: 
+      context: ./admin
+      args:
+        - NEXT_PUBLIC_BASE_URL=http://localhost:8000
+        - NEXT_PUBLIC_LOGO_DEV_PK=pk_B5TuKjaLRsmUFgVH9u5x2A
+    container_name: bulls_admin
+    restart: always
+    env_file:
+      - ./admin/.env.prod
+    ports:
+      - "4345:3000"
+    depends_on:
+      - backend
+    networks:
+      - bulls_network
+
+networks:
+  bulls_network:
+    driver: bridge
+
+volumes:
+  bulls_db_data:

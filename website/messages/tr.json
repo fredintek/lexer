@@ -377,5 +377,7 @@
   "VIEW_STOCKS": "Hisseleri",
   "CAT_FAVORITES": "Favoriler",
   "PNL": "Kar / Zarar",
-  "USER_BALANCE": "Kullanıcı Bakiyesi"
+  "USER_BALANCE": "Kullanıcı Bakiyesi",
+  "SORT_BY_LOTS": "Partiye Göre Sırala",
+  "SORT_BY_EQUITY": "Özkaynaklara Göre Sırala"
 }

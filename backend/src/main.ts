@@ -11,12 +11,15 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    origin: [
+      'http://localhost:3001',
+      'http://localhost:3000',
+      'http://localhost:4356',
+      'http://localhost:4345',
+    ],
     credentials: true,
   });
-  app.use(
-    express.json(),
-  );
+  app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 

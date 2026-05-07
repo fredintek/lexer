@@ -312,11 +312,11 @@ export class AuthService {
       }
 
       // Emit the event (This is non-blocking!)
-      this.eventEmitter.emit('user.activity', {
-        userId: user.id,
-        type: 'LOGIN',
-        description: 'Login Successful',
-      });
+      // this.eventEmitter.emit('user.activity', {
+      //   userId: user.id,
+      //   type: 'LOGIN',
+      //   description: 'Login Successful',
+      // });
 
       await queryRunner.manager.save(User, user);
       // commit transaction
@@ -458,11 +458,11 @@ export class AuthService {
       );
 
       // Emit the event (This is non-blocking!)
-      this.eventEmitter.emit('user.activity', {
-        userId: user.id,
-        type: 'LOGIN',
-        description: 'Login Successful',
-      });
+      // this.eventEmitter.emit('user.activity', {
+      //   userId: user.id,
+      //   type: 'LOGIN',
+      //   description: 'Login Successful',
+      // });
 
       // 8. Return data (Password is already excluded from savedUser/user via @Exclude)
       return {
