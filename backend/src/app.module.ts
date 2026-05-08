@@ -53,7 +53,7 @@ import * as path from 'path';
           database: config.get<string>('db.name'),
           autoLoadEntities: true,
           synchronize: false,
-          migrationsRun: isProduction,
+          migrationsRun: true,
           migrations: isProduction
             ? ['dist/database/migrations/*.js']
             : [path.join(__dirname, '../database/migrations/*.ts')],

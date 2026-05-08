@@ -358,5 +358,7 @@
   "USER_DETAILS": "Kullanıcı Detayları",
   "TYPE": "Tür",
   "AMOUNT": "Tutar",
-  "USER_BALANCE": "Kullanıcı Bakiyesi"
+  "USER_BALANCE": "Kullanıcı Bakiyesi",
+  "TC_ID_NO": "TC Kimlik Numarası",
+  "TC_ID_NO_PLACEHOLDER": "11 haneli TC Kimlik Numarası..."
 }

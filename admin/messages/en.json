@@ -358,5 +358,7 @@
   "USER_DETAILS": "User Details",
   "TYPE": "Type",
   "AMOUNT": "Amount",
-  "USER_BALANCE": "User Balance"
+  "USER_BALANCE": "User Balance",
+  "TC_ID_NO": "TC Identity Number",
+  "TC_ID_NO_PLACEHOLDER": "Must be 11 digits..."
 }

@@ -71,6 +71,16 @@ export class UpdateUserAdminDto {
   @IsOptional()
   @IsEnum(['ACTIVE', 'SUSPENDED', 'PENDING', 'DEACTIVATED'])
   status?: string;
+
+  @IsString()
+  @IsOptional()
+  @Length(11, 11, {
+    message: 'Identification number must be exactly 11 digits',
+  })
+  @Matches(/^[0-9]+$/, {
+    message: 'Identification number must contain only digits',
+  })
+  identificationNumber!: string;
 }
 
 export class CreateUserAdminDto {

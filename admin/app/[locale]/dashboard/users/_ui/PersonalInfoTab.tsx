@@ -20,6 +20,7 @@ export default function PersonalInfoTab({ user }: { user: any }) {
     status: user.status,
     balance: user.balance,
     roleId: user?.role?.id,
+    identificationNumber: user?.identificationNumber,
   });
 
   const handleChange = (
@@ -162,6 +163,30 @@ export default function PersonalInfoTab({ user }: { user: any }) {
               name="phoneNumber"
               value={formData.phoneNumber ?? ""}
               onChange={handleChange}
+              className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold outline-none focus:border-brand"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+              {t("TC_ID_NO")}
+            </label>
+            <input
+              name="identificationNumber"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={formData.identificationNumber ?? ""}
+              onChange={handleChange}
+              maxLength={11}
+              minLength={11}
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(
+                  /[^0-9]/g,
+                  "",
+                );
+              }}
+              placeholder={t("TC_ID_NO_PLACEHOLDER")}
               className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold outline-none focus:border-brand"
             />
           </div>
