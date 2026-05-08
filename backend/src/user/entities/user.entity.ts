@@ -58,6 +58,14 @@ export class User {
   tag!: string;
 
   @Column({
+    type: 'varchar',
+    length: 11,
+    nullable: true,
+    unique: true,
+  })
+  identificationNumber!: string | null;
+
+  @Column({
     type: 'decimal',
     precision: 18,
     scale: 8,

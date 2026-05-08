@@ -9,6 +9,7 @@ import {
   User as UserIcon,
   ArrowRight,
   ShieldCheck,
+  IdCard,
 } from "lucide-react";
 import { useRegisterMutation } from "@/lib/redux/services/auth.api";
 import toast from "react-hot-toast";
@@ -25,19 +26,62 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!agreed) return;
 
+    // 1. Extract Data
     const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
+    const { fullname, email, identificationNumber, password, confirmPassword } =
+      Object.fromEntries(formData.entries()) as Record<string, string>;
 
+    // 2. Check for Empty Fields (Basic validation)
+    if (
+      !fullname ||
+      !email ||
+      !identificationNumber ||
+      !password ||
+      !confirmPassword
+    ) {
+      toast.error(
+        t("ALL_FIELDS_REQUIRED_WARNING") || "Please fill in all fields",
+      );
+      return;
+    }
+
+    // 3. Specific Identity Number Check
+    if (identificationNumber.length !== 11) {
+      toast.error(
+        t("INVALID_ID_NUMBER") || "Identity number must be 11 digits",
+      );
+      return;
+    }
+
+    // 4. Password Match Check
+    if (password !== confirmPassword) {
+      toast.error(t("PASSWORDS_DO_NOT_MATCH") || "Passwords do not match");
+      return;
+    }
+
+    // 5. Terms Agreement Check
+    if (!agreed) {
+      toast.error(t("PLEASE_AGREE_TO_TERMS") || "Please agree to the terms");
+      return;
+    }
+
+    // 6. Proceed to Registration
     try {
       await register({
-        fullname: data.fullname,
-        email: data.email,
-        password: data.password,
-        confirmPassword: data.confirmPassword,
+        fullname,
+        email,
+        identificationNumber,
+        password,
+        confirmPassword,
       }).unwrap();
-    } catch (err: any) {}
+
+      toast.success(
+        t("REGISTRATION_SUCCESS") || "Account created successfully!",
+      );
+    } catch (err: any) {
+      toast.error(err?.data?.message || t("REGISTRATION_FAILED"));
+    }
   };
 
   useEffect(() => {
@@ -104,6 +148,35 @@ export default function RegisterPage() {
               type="email"
               required
               placeholder={t("EMAIL_PLACEHOLDER")}
+              className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        {/* Identity Number */}
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+            {t("TC_ID_NO")}
+          </label>
+          <div className="relative group">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
+              <IdCard size={18} />
+            </div>
+            <input
+              name="identificationNumber"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              required
+              maxLength={11}
+              minLength={11}
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(
+                  /[^0-9]/g,
+                  "",
+                );
+              }}
+              placeholder={t("TC_ID_NO_PLACEHOLDER")}
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
           </div>

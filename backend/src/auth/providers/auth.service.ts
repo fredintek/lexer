@@ -172,6 +172,7 @@ export class AuthService {
         fullname: registerDto.fullname,
         email: registerDto.email,
         password: hashedPassword,
+        identificationNumber: registerDto?.identificationNumber,
         tag,
         role: traderRole as Role,
       });

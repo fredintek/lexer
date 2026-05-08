@@ -68,9 +68,9 @@ const UsersPage = () => {
               ?.map((n: any) => n[0])
               ?.join("")}
           </div>
-          <div className="flex flex-col">
+          <div className="flex flex-col items-center">
             <span className="text-sm font-bold text-fg truncate max-w-30">
-              {user.name}
+              {user.fullname}
             </span>
             <span className="text-[11px] text-slate-400 font-medium">
               {user.email}
@@ -82,6 +82,22 @@ const UsersPage = () => {
     {
       header: t("KYC_STATUS"),
       render: (user) => <StatusBadge status={user?.kyc?.status} />,
+    },
+    {
+      header: t("TC_ID_NO"),
+      render: (user) => {
+        const id = user.identificationNumber;
+        if (!id) return <StatusBadge status={""} />;
+
+        // Masking logic: 11******11
+        const maskedId = `${id.substring(0, 2)}*******${id.substring(9)}`;
+
+        return (
+          <span className="font-mono text-sm font-medium text-slate-700 dark:text-slate-300">
+            {maskedId}
+          </span>
+        );
+      },
     },
     {
       header: t("ROLE"),

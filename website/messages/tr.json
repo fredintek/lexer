@@ -379,5 +379,7 @@
   "PNL": "Kar / Zarar",
   "USER_BALANCE": "Kullanıcı Bakiyesi",
   "SORT_BY_LOTS": "Partiye Göre Sırala",
-  "SORT_BY_EQUITY": "Özkaynaklara Göre Sırala"
+  "SORT_BY_EQUITY": "Özkaynaklara Göre Sırala",
+  "TC_ID_NO": "TC Kimlik Numarası",
+  "TC_ID_NO_PLACEHOLDER": "11 haneli TC Kimlik Numarası..."
 }

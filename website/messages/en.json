@@ -379,5 +379,7 @@
   "PNL": "Profit / Loss",
   "USER_BALANCE": "User Balance",
   "SORT_BY_LOTS": "Sort Lot",
-  "SORT_BY_EQUITY": "Sort Equity"
+  "SORT_BY_EQUITY": "Sort Equity",
+  "TC_ID_NO": "TC Identity Number",
+  "TC_ID_NO_PLACEHOLDER": "Must be 11 digits..."
 }

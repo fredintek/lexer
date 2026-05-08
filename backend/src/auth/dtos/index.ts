@@ -1,12 +1,13 @@
 import { Transform } from 'class-transformer';
 import {
-    IsBoolean,
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   IsUUID,
+  Length,
   Matches,
   MaxLength,
   MinLength,
@@ -17,7 +18,6 @@ import {
 } from 'class-validator';
 import { PASSWORD_REGEX, PASSWORD_REGEX_MESSAGE } from 'src/lib/constants';
 import { MFAEnum } from 'src/user/entities/user.entity';
-
 
 @ValidatorConstraint({ name: 'CustomMatchPasswords', async: false })
 export class CustomMatchPasswords implements ValidatorConstraintInterface {
@@ -51,6 +51,16 @@ export class RegisterDto {
 
   @Validate(CustomMatchPasswords, ['password'])
   confirmPassword!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Length(11, 11, {
+    message: 'Identification number must be exactly 11 digits',
+  })
+  @Matches(/^[0-9]+$/, {
+    message: 'Identification number must contain only digits',
+  })
+  identificationNumber!: string;
 }
 
 export class LoginDto {
