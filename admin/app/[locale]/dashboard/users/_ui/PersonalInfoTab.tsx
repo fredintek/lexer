@@ -4,11 +4,12 @@ import { Save, Loader2 } from "lucide-react";
 import { useUpdateUserMutation } from "@/lib/redux/services/user.api";
 import toast from "react-hot-toast";
 import { useTranslations } from "next-intl";
-import { formatCurrency } from "@/lib/helpers";
+import { useGetRolesQuery } from "@/lib/redux/services/role.api";
 
 export default function PersonalInfoTab({ user }: { user: any }) {
   const t = useTranslations();
   const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+  const { data: roles } = useGetRolesQuery(undefined);
   const [formData, setFormData] = useState({
     fullname: user.fullname,
     email: user.email,
@@ -18,6 +19,7 @@ export default function PersonalInfoTab({ user }: { user: any }) {
     emailEnabled: user.emailEnabled,
     status: user.status,
     balance: user.balance,
+    roleId: user?.role?.id,
   });
 
   const handleChange = (
@@ -116,6 +118,23 @@ export default function PersonalInfoTab({ user }: { user: any }) {
               {["ACTIVE", "SUSPENDED", "PENDING", "DEACTIVATED"].map((t) => (
                 <option key={t} value={t}>
                   {t}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-black text-slate-500 uppercase ml-1">
+              {t("ROLE")}
+            </label>
+            <select
+              name="roleId"
+              value={formData.roleId}
+              onChange={handleChange}
+              className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold outline-none focus:border-brand appearance-none"
+            >
+              {roles?.map((t: any) => (
+                <option key={t?.id} value={t?.id}>
+                  {t?.name}
                 </option>
               ))}
             </select>

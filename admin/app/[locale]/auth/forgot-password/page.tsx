@@ -78,7 +78,7 @@ export default function ForgotPasswordPage() {
             <input
               type="email"
               required
-              placeholder="e.g. support@lexer.com"
+              placeholder="e.g. support@bullsyatirim.com"
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
           </div>
