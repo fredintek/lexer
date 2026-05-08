@@ -50,7 +50,7 @@ export default function LoginPage() {
           Welcome Back
         </h1>
         <p className="text-sm font-medium text-slate-500 mt-1">
-          Enter your admin credentials to access LEXER
+          Enter your admin credentials to gain access
         </p>
       </div>
 
@@ -70,7 +70,7 @@ export default function LoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@lexer.com"
+              placeholder="admin@bullsyatirim.com"
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
           </div>
@@ -136,7 +136,9 @@ export default function LoginPage() {
         <p className="text-[11px] leading-relaxed text-slate-500 text-center">
           Security Note: Unauthorized access attempts are logged and reported to
           the system administrator.
-          <span className="text-brand font-bold ml-1">Lexer v2.1.0</span>
+          <span className="text-brand font-bold ml-1">
+            Bulls Yatirim v2.1.0
+          </span>
         </p>
       </div>
     </div>

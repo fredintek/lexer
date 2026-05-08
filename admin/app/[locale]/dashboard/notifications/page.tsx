@@ -69,7 +69,7 @@ const NotificationsPage = () => {
         <NotificationItem
           type="system"
           title="Engine Update Successful"
-          description="Lexer Synthetic Engine v2.4.0 has been deployed to all production nodes."
+          description="Bull Yatirim Synthetic Engine v2.4.0 has been deployed to all production nodes."
           time="4 hours ago"
           isRead={false}
         />

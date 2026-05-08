@@ -38,7 +38,7 @@ export default function AuthLayout({
           <div className="relative z-10">{children}</div>
 
           <p className="mt-10 text-center text-[10px] font-bold tracking-widest text-slate-400 dark:text-slate-600 uppercase">
-            &copy; 2026 LEXER Synthetic Engine. All rights reserved.
+            &copy; 2026 Bull Yatirim Synthetic Engine. All rights reserved.
           </p>
         </div>
       </div>

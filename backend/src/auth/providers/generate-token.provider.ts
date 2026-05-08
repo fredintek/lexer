@@ -29,10 +29,10 @@ export class GenerateTokenProvider {
     private readonly configService: ConfigService,
 
     /**
-         * Injecting User Repository
-         */
-        @InjectRepository(RefreshToken)
-        private readonly refreshTokenRepository: Repository<RefreshToken>,
+     * Injecting User Repository
+     */
+    @InjectRepository(RefreshToken)
+    private readonly refreshTokenRepository: Repository<RefreshToken>,
   ) {}
 
   // Sign Token
@@ -46,7 +46,10 @@ export class GenerateTokenProvider {
   }
 
   // Generate Access Token
-  public async generateAccessToken(user: User, historyId?: string): Promise<string> {
+  public async generateAccessToken(
+    user: User,
+    historyId?: string,
+  ): Promise<string> {
     try {
       const expiresIn = this.configService.get('auth.jwt_expiresIn');
       const accessToken = await this.signToken<ActiveUserInterface>(expiresIn, {
@@ -66,41 +69,41 @@ export class GenerateTokenProvider {
     user: User,
     historyId: string,
     customRefreshExp?: any,
-    manager?: EntityManager
+    manager?: EntityManager,
   ): Promise<string> {
     try {
       const expiresIn =
         customRefreshExp ??
         this.configService.get('auth.jwt_refresh_expiresIn');
 
-        // 1. Generate the JWT string
+      // 1. Generate the JWT string
       const refreshToken = await this.signToken<ActiveUserInterface>(
         expiresIn,
         {
           userId: user.id,
           email: user.email,
           avatar: user.avatar,
-          loginHistoryId: historyId
+          loginHistoryId: historyId,
         },
       );
 
       // 2. Calculate expiry for the DB record (matching JWT time)
-    // Convert '7d' or seconds to a Date object
-    const days = parseInt(expiresIn)
+      // Convert '7d' or seconds to a Date object
+      const days = parseInt(expiresIn);
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + days)
+      expiresAt.setDate(expiresAt.getDate() + days);
 
       // 3. PERSIST the token to the DB
-    // This allows us to "Not(currentToken)" later to revoke others
-    const repo = manager 
-      ? manager.getRepository(RefreshToken) 
-      : this.refreshTokenRepository;
-    await repo.save({
-      token: refreshToken, 
-      user: { id: user.id },
-      expiresAt: expiresAt,
-      history: { id: historyId }
-    });
+      // This allows us to "Not(currentToken)" later to revoke others
+      const repo = manager
+        ? manager.getRepository(RefreshToken)
+        : this.refreshTokenRepository;
+      await repo.save({
+        token: refreshToken,
+        user: { id: user.id },
+        expiresAt: expiresAt,
+        history: { id: historyId },
+      });
 
       return refreshToken;
     } catch (error: any) {
@@ -133,7 +136,7 @@ export class GenerateTokenProvider {
     res: Response,
     refreshToken: string,
     customRefreshExp?: number,
-    isAdmin?: boolean
+    isAdmin?: boolean,
   ) {
     const env = this.configService.get('app.env');
     const maxAge =
@@ -144,13 +147,17 @@ export class GenerateTokenProvider {
               Number(this.configService.get('auth.refresh_token_max_age')),
           );
 
-    res.cookie(isAdmin ? "adminRefreshToken" : REFRESH_TOKEN_ALIAS, refreshToken, {
-      httpOnly: true,
-      secure: env === 'production' ? true : true,
-      sameSite: env === 'production' ? 'strict' : 'lax',
-      path: '/',
-      maxAge,
-    });
+    res.cookie(
+      isAdmin ? 'adminRefreshToken' : REFRESH_TOKEN_ALIAS,
+      refreshToken,
+      {
+        httpOnly: true,
+        secure: env === 'production' ? true : false,
+        sameSite: env === 'production' ? 'strict' : 'lax',
+        path: '/',
+        maxAge,
+      },
+    );
   }
 
   // verify refresh token with jwt

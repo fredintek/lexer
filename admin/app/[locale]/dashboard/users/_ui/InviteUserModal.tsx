@@ -100,7 +100,7 @@ const InviteUserModal = ({ isOpen, onClose }: InviteUserModalProps) => {
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                placeholder="user@lexer.com"
+                placeholder="user@bullsyatirim.com"
                 className="w-full pl-11 pr-4 py-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl text-sm font-bold focus:border-brand outline-none transition-all"
               />
             </div>

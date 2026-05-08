@@ -29,7 +29,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
           <div className="flex flex-col">
             {/* Breadcrumb style sub-text */}
             <div className="flex items-center gap-1 text-[11px] font-bold tracking-wider text-slate-400 dark:text-slate-500 uppercase">
-              <span>Lexer</span>
+              <span>Bulls Yatirim</span>
               <ChevronRight size={12} className="mt-px" />
               <span className="text-slate-500 dark:text-slate-300">
                 {t("PAGES")}

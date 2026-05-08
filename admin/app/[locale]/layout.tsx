@@ -14,8 +14,8 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  title: "Lexer",
-  description: "Lexer Stocks",
+  title: "Admin - Bulls Yatirim",
+  description: "Bulls yatirim admin panel",
 };
 
 type Props = {
