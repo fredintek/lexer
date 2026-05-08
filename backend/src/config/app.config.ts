@@ -10,4 +10,5 @@ export default registerAs('app', () => ({
   cloudinary_api_key: process.env.CLOUDINARY_API_KEY,
   cloudinary_api_secret: process.env.CLOUDINARY_API_SECRET,
   totp_secret: process.env.ENCRYPTION_KEY,
+  cookie_domain: process.env.COOKIE_DOMAIN || 'localhost',
 }));

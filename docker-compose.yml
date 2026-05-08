@@ -50,7 +50,7 @@ services:
     build: 
       context: ./website
       args:
-        - NEXT_PUBLIC_BASE_URL=https://api.blukstogether.com
+        - NEXT_PUBLIC_BASE_URL=https://api.esube-bullsyatirim.com
         - NEXT_PUBLIC_LOGO_DEV_PK=pk_B5TuKjaLRsmUFgVH9u5x2A
     container_name: bulls_web
     restart: always
@@ -67,7 +67,7 @@ services:
     build: 
       context: ./admin
       args:
-        - NEXT_PUBLIC_BASE_URL=https://api.blukstogether.com
+        - NEXT_PUBLIC_BASE_URL=https://api.esube-bullsyatirim.com
         - NEXT_PUBLIC_LOGO_DEV_PK=pk_B5TuKjaLRsmUFgVH9u5x2A
     container_name: bulls_admin
     restart: always

@@ -11,9 +11,8 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   app.set('trust proxy', 1);
 
-  const origins = configService.get('app.frontend_origins') 
-  ? configService.get('app.frontend_origins').split(',') 
-  : ['https://blukstogether.com', 'https://admin.blukstogether.com'];
+  const origins = configService.get('app.frontend_origins').split(',')
+  
   app.enableCors({
     origin: origins,
     credentials: true,

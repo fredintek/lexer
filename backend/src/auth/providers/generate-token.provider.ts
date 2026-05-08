@@ -137,7 +137,7 @@ export class GenerateTokenProvider {
   ) {
     const env = this.configService.get('app.env');
 
-    const domain = env === 'production' ? '.blukstogether.com' : 'localhost';
+    const domain = this.configService.get('app.cookie_domain');
 
     const maxAge =
       customRefreshExp === 0
