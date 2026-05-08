@@ -140,3 +140,6 @@
 # typescript
 /admin/*.tsbuildinfo
 /admin/next-env.d.ts
+
+# =================== NGINX ===================
+/nginx

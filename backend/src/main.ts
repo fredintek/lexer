@@ -9,14 +9,13 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
+  app.set('trust proxy', 1);
 
+  const origins = configService.get('app.frontend_origins') 
+  ? configService.get('app.frontend_origins').split(',') 
+  : ['https://blukstogether.com', 'https://admin.blukstogether.com'];
   app.enableCors({
-    origin: [
-      'http://localhost:3001',
-      'http://localhost:3000',
-      'http://localhost:4356',
-      'http://localhost:4345',
-    ],
+    origin: origins,
     credentials: true,
   });
   app.use(express.json());

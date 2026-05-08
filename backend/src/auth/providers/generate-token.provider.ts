@@ -136,6 +136,9 @@ export class GenerateTokenProvider {
     isAdmin?: boolean
   ) {
     const env = this.configService.get('app.env');
+
+    const domain = env === 'production' ? '.blukstogether.com' : 'localhost';
+
     const maxAge =
       customRefreshExp === 0
         ? 0
@@ -146,10 +149,11 @@ export class GenerateTokenProvider {
 
     res.cookie(isAdmin ? "adminRefreshToken" : REFRESH_TOKEN_ALIAS, refreshToken, {
       httpOnly: true,
-      secure: env === 'production' ? true : true,
-      sameSite: env === 'production' ? 'strict' : 'lax',
+      secure: true,
+      sameSite: "lax",
       path: '/',
       maxAge,
+      domain
     });
   }
 
