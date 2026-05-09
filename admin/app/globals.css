@@ -87,3 +87,29 @@ body {
 .dark .lexer-select .ant-select-selector {
   border-color: rgb(30, 41, 59) !important;
 }
+
+@keyframes shimmer {
+  0%   { background-position: -600px 0; }
+  100% { background-position:  600px 0; }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    theme('colors.slate.100') 25%,
+    theme('colors.slate.200') 50%,
+    theme('colors.slate.100') 75%
+  );
+  background-size: 600px 100%;
+  animation: shimmer 1.4s infinite ease-in-out;
+}
+
+.dark .skeleton {
+  background: linear-gradient(
+    90deg,
+    theme('colors.slate.800') 25%,
+    theme('colors.slate.700') 50%,
+    theme('colors.slate.800') 75%
+  );
+  background-size: 600px 100%;
+}

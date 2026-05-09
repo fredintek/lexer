@@ -14,6 +14,7 @@ interface DataTableProps<T> {
   columns: Column<T>[];
   itemsPerPage?: number;
   minWidth?: string;
+  isLoading?: boolean;
 }
 
 export default function DataTable<T>({
@@ -21,6 +22,7 @@ export default function DataTable<T>({
   columns,
   itemsPerPage = 10,
   minWidth = "1200px",
+  isLoading = false,
 }: DataTableProps<T>) {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -29,6 +31,65 @@ export default function DataTable<T>({
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
+
+  const SKELETON_ROWS = 5;
+
+  if (isLoading) {
+    return (
+      <div className="max-w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-bg shadow-sm">
+        <div className="overflow-x-auto">
+          <table
+            className="w-full text-left border-collapse"
+            style={{ minWidth }}
+          >
+            <thead>
+              <tr className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                {columns.map((col, idx) => (
+                  <th key={idx} className="px-6 py-4">
+                    <div className="skeleton h-2.5 w-12 rounded" />
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              {Array.from({ length: SKELETON_ROWS }).map((_, rowIdx) => (
+                <tr key={rowIdx} style={{ opacity: 1 - rowIdx * 0.18 }}>
+                  {columns.map((_, colIdx) => (
+                    <td key={colIdx} className="px-6 py-4">
+                      {colIdx === 0 ? (
+                        <div className="flex items-center gap-3">
+                          <div className="skeleton w-10 h-10 rounded-2xl shrink-0" />
+                          <div className="space-y-1.5">
+                            <div className="skeleton h-2.5 w-14 rounded" />
+                            <div className="skeleton h-2 w-10 rounded" />
+                          </div>
+                        </div>
+                      ) : colIdx === columns.length - 1 ? (
+                        <div className="flex justify-end">
+                          <div className="skeleton h-8 w-16 rounded-lg" />
+                        </div>
+                      ) : (
+                        <div className="skeleton h-2.5 w-16 rounded" />
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/30 dark:bg-slate-900/20">
+          <div className="skeleton h-2.5 w-32 rounded" />
+          <div className="flex gap-2">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="skeleton h-8 w-8 rounded-xl" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-bg shadow-sm">

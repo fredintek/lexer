@@ -32,8 +32,6 @@ export default function AssetsSection() {
   const { data: myAssets, isLoading: isMyAssetsLoading } =
     useGetMyAssetsQuery(undefined);
 
-  console.log("myAssets", myAssets);
-
   const [activeTab, setActiveTab] = useState<
     "open" | "waiting" | "closed" | "cancelled"
   >("open");
@@ -100,7 +98,7 @@ export default function AssetsSection() {
   }, [dispatch]);
 
   // 3. Columns Definition (Dynamic based on Tab)
-  const columns = useMemo(() => {
+  const columns: Column<any>[] = useMemo(() => {
     const baseColumns = [
       {
         header: t("ASSET"),
