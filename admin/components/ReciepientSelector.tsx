@@ -112,7 +112,7 @@ const RecipientSelector = ({
             {users.length > 0 ? (
               users
                 ?.filter(
-                  (user) =>
+                  (user: any) =>
                     user?.id !== currentUser?.id &&
                     user?.role?.name !== "superadmin",
                 )
