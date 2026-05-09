@@ -33,8 +33,6 @@ import { ActiveUserInterface } from 'src/lib/types';
 import { RefreshToken } from 'src/user/entities/refresh-tokens.entity';
 import {
   addMinuitesToCurrentTime,
-  decrypt,
-  encrypt,
   generateOTP,
   isDateExpired,
   localizeDate,
@@ -42,19 +40,11 @@ import {
 import * as crypto from 'crypto';
 import * as QRCode from 'qrcode';
 import { ConfigService } from '@nestjs/config';
-import { TOTP } from '@otplib/totp';
-// import { ScureBase32Plugin } from '@otplib/plugin-base32-scure';
-import { NodeCryptoPlugin } from '@otplib/plugin-crypto-node';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthService {
-  private readonly totpConfig = {
-    issuer: 'Lexer Trading',
-    crypto: new NodeCryptoPlugin(),
-    // base32: new ScureBase32Plugin(),
-  };
-
   constructor(
     /**
      * Injecting Datasource
@@ -110,13 +100,6 @@ export class AuthService {
      */
     private readonly eventEmitter: EventEmitter2,
   ) {}
-
-  private getTotpInstance(email: string): TOTP {
-    return new TOTP({
-      ...this.totpConfig,
-      label: email,
-    });
-  }
 
   public async generateUniqueTag(manager: EntityManager): Promise<string> {
     let isUnique = false;
@@ -840,67 +823,39 @@ export class AuthService {
   /**
    * Generate two factor secret
    */
-  public async generateTOTP2FASecret(currentUser: ActiveUserInterface) {
-    // 1. Generate a high-entropy secret
-    const secret = this.getTotpInstance(currentUser.email).generateSecret();
-
-    // 2. Create the otpauth:// URI
-    // This contains the app name and user identifier
-    const otpauthUrl = this.getTotpInstance(currentUser.email).toURI({
-      issuer: 'Lexer Trading',
-      label: currentUser.email,
+  public async setupTotp(currentUser: ActiveUserInterface) {
+    const secret = authenticator.generateSecret();
+    const uri = authenticator.keyuri(
+      currentUser?.email,
+      'esube-bullsyatirim',
       secret,
-    });
-
-    // 3. (Optional) You can save the secret as "pending"
-    // or just return it for the user to verify in the next step
-    const qrCodeImageUrl = await QRCode.toDataURL(otpauthUrl);
-
-    return {
-      secret,
-      qrCodeImageUrl,
-    };
-  }
-
-  public async activateTOTP2FA(
-    currentUser: ActiveUserInterface,
-    code: string,
-    secret: string,
-  ) {
-    // 1. Check if the code matches the secret
-    const isValid = await this.getTotpInstance(currentUser.email).verify(code, {
-      secret,
-    });
-
-    if (!isValid.valid) {
-      throw new BadRequestException(
-        'Invalid activation code. Please try again.',
-      );
-    }
-
-    // Encrypt the secret before saving
-    const encryptedSecret = encrypt(
-      secret,
-      this.configService.get<string>('app.totp_secret')!,
     );
 
-    // 2. Persist the secret and enable 2FA on the user entity
+    const qrCodeImageUrl = await QRCode.toDataURL(uri);
+
+    return { secret, qrCodeImageUrl };
+  }
+
+  async activateTotp(
+    currentUser: ActiveUserInterface,
+    token: string,
+    secret: string,
+  ) {
+    const result = authenticator.verify({ secret, token });
+
+    if (!result) {
+      throw new BadRequestException('Invalid 6-digit code');
+    }
+
     await this.userRepository.update(currentUser.userId, {
-      mfaSecret: encryptedSecret,
+      mfaSecret: secret,
       isTwoFactorEnabled: true,
       mfaMethod: MFAEnum.TOTP,
     });
 
     await this.userRepository.increment({ id: currentUser?.userId }, 'tier', 1);
 
-    // Emit the event (This is non-blocking!)
-    this.eventEmitter.emit('user.activity', {
-      userId: currentUser?.userId,
-      type: 'SECURITY',
-      description: '2FA activated successfully',
-    });
-
-    return { message: 'Two-factor authentication enabled successfully' };
+    return { success: true };
   }
 
   public async verifyTOTP2FA(
@@ -915,18 +870,12 @@ export class AuthService {
       throw new UnauthorizedException('2FA not set up.');
     }
 
-    // Decrypt the secret from the DB
-    const originalSecret = decrypt(
-      user.mfaSecret,
-      this.configService.get<string>('app.totp_secret')!,
-    );
-
-    // Use the decrypted secret to check the 6-digit code
-    const isValid = await this.getTotpInstance(user.email).verify(code, {
-      secret: originalSecret,
+    const result = authenticator.verify({
+      secret: user?.mfaSecret,
+      token: code,
     });
 
-    if (!isValid.valid) {
+    if (!result) {
       throw new BadRequestException('Invalid 2FA code.');
     }
 
@@ -952,13 +901,6 @@ export class AuthService {
       // SET REFRESH TOKEN IN COOKIES
       this.tokenGenerator.setRefreshCookie(res, tokens.refreshToken);
     }
-
-    // Emit the event (This is non-blocking!)
-    this.eventEmitter.emit('user.activity', {
-      userId: user.id,
-      type: 'LOGIN',
-      description: 'Login Successful',
-    });
 
     return {
       message: 'valid',

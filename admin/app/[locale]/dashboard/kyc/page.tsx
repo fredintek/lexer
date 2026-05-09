@@ -1,113 +1,91 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import StatusBadge from "@/components/StatusBadge";
 import {
-  CheckCircle2,
-  XCircle,
   Eye,
   FileText,
   ShieldCheck,
   AlertCircle,
   Search,
   Loader2,
+  Fingerprint,
+  TimerReset,
+  RotateCcw,
 } from "lucide-react";
 import DataTable, { Column } from "@/components/dataTable/DataTable";
-import KYCReviewModal from "./_ui/KycReviewModal";
-import {
-  useGetKYCRequestsQuery,
-  useUpdateKYCStatusMutation,
-} from "@/lib/redux/services/kyc.api";
-import toast from "react-hot-toast";
+import { useGetKYCRequestsQuery } from "@/lib/redux/services/kyc.api";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslations } from "next-intl";
+import { formatDate } from "@/lib/helpers";
+import { Link } from "@/i18n/navigation";
 
 const KYCPage = () => {
   const t = useTranslations();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const debouncedSearch = useDebounce(searchTerm, 500);
+  const startDateRef = useRef<HTMLInputElement>(null);
+  const endDateRef = useRef<HTMLInputElement>(null);
 
+  const [filters, setFilters] = useState({
+    status: "",
+    startDate: "",
+    endDate: "",
+  });
   // 1. Fetch Real Data
   const { data: requests, isLoading } = useGetKYCRequestsQuery({
     search: debouncedSearch,
+    status: filters.status || undefined,
+    startDate: filters.startDate || undefined,
+    endDate: filters.endDate || undefined,
   });
-  const [updateStatus, { isLoading: isUpdating }] =
-    useUpdateKYCStatusMutation();
 
-  // 2. Action Handlers
-  const handleAction = async (
-    id: string,
-    status: "Active" | "Inactive",
-    reason?: string,
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
   ) => {
-    try {
-      await updateStatus({
-        id,
-        status: status.toUpperCase(),
-        rejectionReason: reason,
-      }).unwrap();
-
-      toast.success(`KYC ${status === "Active" ? "Approved" : "Rejected"}`);
-      handleCloseModal();
-    } catch (err: any) {
-      toast.error(err?.data?.message || "Failed to update status");
-    }
+    setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
-  const handleOpenModal = (request: any) => {
-    setSelectedRequest(request);
-    setIsModalOpen(true);
+  const clearFilters = () => {
+    setFilters({ status: "", startDate: "", endDate: "" });
+    setSearchTerm("");
   };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    setSelectedRequest(null);
-  };
-
-  // 3. Transform & Filter Data
-  const filteredData = useMemo(() => {
-    if (!requests) return [];
-
-    return requests.map((r: any) => ({
-      id: r?.user?.tag,
-      userName: r.user?.fullname || `User #${r.user?.id?.slice(0, 6)}`,
-      userEmail: r.user?.email,
-      documentType: r.documentType,
-      country: r.country,
-      submittedAt: new Date(r.createdAt).toLocaleString(),
-      tier: r?.user?.tier || 1,
-      status: r.status,
-      raw: r,
-    }));
-  }, [requests]);
 
   // 4. Stats Calculation
   const stats = useMemo(() => {
     if (!requests) return { pending: 0, verified: 0 };
     return {
       pending: requests.filter((r: any) => r.status === "PENDING").length,
-      verified: requests.filter((r: any) => r.status === "ACTIVE").length,
+      verified: requests.filter((r: any) => r.status === "APPROVED").length,
     };
   }, [requests]);
 
   const kycColumns: Column<any>[] = [
     {
       header: t("COLUMN_ID"),
-      render: (item) => (
+      render: (kyc) => (
         <span className="text-xs font-mono font-bold text-slate-400">
-          {item.id}
+          {kyc?.user?.tag}
         </span>
       ),
     },
     {
-      header: t("COLUMN_USER"),
-      render: (item) => (
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-fg">{item.userName}</span>
-          <span className="text-[11px] text-slate-400 font-medium">
-            {item.userEmail}
-          </span>
+      header: t("USER_DETAILS"),
+      render: (kyc) => (
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-9 w-9 rounded-xl bg-brand/10 text-brand font-bold flex items-center justify-center text-xs shrink-0">
+            {kyc?.user?.fullname
+              ?.split(" ")
+              ?.map((n: any) => n[0])
+              ?.join("")}
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-sm font-bold text-fg truncate max-w-30">
+              {kyc?.user.fullname}
+            </span>
+            <span className="text-[11px] text-slate-400 font-medium">
+              {kyc?.user.email}
+            </span>
+          </div>
         </div>
       ),
     },
@@ -127,79 +105,54 @@ const KYCPage = () => {
     },
     {
       header: t("COLUMN_TIER"),
-      render: (item) => (
+      render: (kyc) => (
         <div className="flex items-center gap-1">
-          {[...Array(3)].map((_, i) => (
+          {[...Array(kyc?.user?.tier)].map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 w-4 rounded-full ${i < item.tier ? "bg-brand" : "bg-slate-200 dark:bg-slate-800"}`}
+              className={`h-1.5 w-4 rounded-full ${i < kyc?.user?.tier ? "bg-brand" : "bg-slate-200 dark:bg-slate-800"}`}
             />
           ))}
           <span className="ml-2 text-[10px] font-black text-slate-500 uppercase">
-            {t("LVL")} {item.tier}
+            {t("LVL")} {kyc?.user?.tier}
           </span>
         </div>
       ),
     },
     {
       header: t("COLUMN_SUBMISSION_DATE"),
-      render: (item) => (
+      render: (kyc) => (
         <span className="text-xs font-medium text-slate-500">
-          {item.submittedAt}
+          {formatDate(kyc?.createdAt)}
         </span>
       ),
     },
     {
-      header: t("COLUMN_STATUS"),
-      render: (item) => (
-        <StatusBadge
-          status={
-            item.status === "ACTIVE"
-              ? "APPROVED"
-              : item.status === "INACTIVE"
-                ? "REJECTED"
-                : "PENDING"
-          }
-        />
+      header: t("REVIEWED_BY"),
+      render: (kyc) => (
+        <div className="flex items-center gap-2 text-xs font-bold text-slate-600 dark:text-slate-300">
+          <Fingerprint size={14} className="text-brand" />
+          <span className="capitalize">{kyc?.reviewedBy?.fullname}</span>
+          <span className="text-[10px] text-slate-400 font-medium">
+            ({kyc?.reviewedBy?.role?.name})
+          </span>
+        </div>
       ),
+    },
+    {
+      header: t("COLUMN_STATUS"),
+      render: (kyc) => <StatusBadge status={kyc?.status} />,
     },
     {
       header: t("COLUMN_ACTIONS"),
       align: "right",
-      render: (item) => (
-        <div className="flex items-center justify-end gap-2">
-          <button
-            onClick={() => handleOpenModal(item.raw)}
-            className="p-2 text-slate-400 hover:text-brand hover:bg-brand/5 rounded-lg transition-all"
-            title={t("REVIEW_DETAILS")}
-          >
-            <Eye size={18} />
-          </button>
-          {item.status === "PENDING" && (
-            <>
-              <button
-                onClick={() => handleAction(item.id, "Active")}
-                className="p-2 text-slate-400 hover:text-up hover:bg-up/5 rounded-lg transition-all"
-                title={t("QUICK_APPROVE")}
-              >
-                <CheckCircle2 size={18} />
-              </button>
-              <button
-                onClick={() =>
-                  handleAction(
-                    item.id,
-                    "Inactive",
-                    t("REJECTION_REASON_MANUAL"),
-                  )
-                }
-                className="p-2 text-slate-400 hover:text-down hover:bg-down/5 rounded-lg transition-all"
-                title={t("QUICK_REJECT")}
-              >
-                <XCircle size={18} />
-              </button>
-            </>
-          )}
-        </div>
+      render: (kyc) => (
+        <Link
+          href={`/dashboard/users/${kyc?.user?.id}?tab=identity`}
+          className="p-2 text-slate-400 hover:text-brand transition-all"
+        >
+          <Eye size={18} />
+        </Link>
       ),
     },
   ];
@@ -254,6 +207,51 @@ const KYCPage = () => {
           </div>
         </div>
 
+        <div className="flex gap-4">
+          <select
+            name="status"
+            value={filters.status}
+            onChange={handleFilterChange}
+            className="cursor-pointer px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold outline-none focus:border-brand"
+          >
+            <option value="">{t("STATUS")}</option>
+            <option value="PENDING">{t("PENDING")}</option>
+            <option value="APPROVED">{t("APPROVED")}</option>
+            <option value="REJECTED">{t("REJECTED")}</option>
+          </select>
+
+          {/* Date Range Group */}
+          <div className="flex items-center gap-2">
+            <input
+              ref={startDateRef}
+              type="date"
+              name="startDate"
+              value={filters.startDate}
+              onClick={() => startDateRef.current?.showPicker()}
+              onChange={handleFilterChange}
+              className="cursor-pointer flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none"
+            />
+            <span className="text-slate-400">-</span>
+            <input
+              ref={endDateRef}
+              type="date"
+              name="endDate"
+              value={filters.endDate}
+              onClick={() => endDateRef.current?.showPicker()}
+              onChange={handleFilterChange}
+              className="cursor-pointer flex-1 px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs outline-none"
+            />
+          </div>
+
+          {/* Clear Button */}
+          <button
+            onClick={clearFilters}
+            className="cursor-pointer text-[10px] font-black uppercase text-slate-400 hover:text-down transition-colors"
+          >
+            <RotateCcw size={16} />
+          </button>
+        </div>
+
         {/* Table Section */}
         <div className="relative">
           {isLoading && (
@@ -261,19 +259,13 @@ const KYCPage = () => {
               <Loader2 className="animate-spin text-brand" size={32} />
             </div>
           )}
-          <DataTable data={filteredData} columns={kycColumns} />
+          <DataTable
+            data={(requests as any[]) ?? []}
+            columns={kycColumns}
+            isLoading={isLoading}
+          />
         </div>
       </div>
-
-      {/* Detail Review Modal */}
-      <KYCReviewModal
-        isOpen={isModalOpen}
-        request={selectedRequest}
-        onClose={handleCloseModal}
-        isUpdating={isUpdating}
-        onApprove={(id) => handleAction(id, "Active")}
-        onReject={(id, reason) => handleAction(id, "Inactive", reason)}
-      />
     </div>
   );
 };

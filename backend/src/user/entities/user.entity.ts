@@ -20,6 +20,7 @@ import { Notification } from 'src/notification/entities/notification.entity';
 import { Kyc } from 'src/kyc/entities/kyc.entity';
 import { Trade } from 'src/trade/entities/trade.entity';
 import { Favorite } from 'src/yfinance/entities/favoriteStock.entity';
+import { Positions } from 'src/positions/entities/position.entity';
 
 export interface IAvatar {
   publicId: string;
@@ -193,6 +194,9 @@ export class User {
 
   @OneToMany(() => PaymentMethod, (paymentMethods) => paymentMethods.user)
   paymentMethods!: PaymentMethod[];
+
+  @OneToMany(() => Positions, (position) => position.user)
+  positions!: Positions[];
 
   @OneToMany(() => Transaction, (transaction) => transaction.user)
   transactions!: Transaction[];

@@ -37,6 +37,13 @@ export class UserController {
   ) {
     return this.userService.findAll(getUsersQueryDto, currentUser);
   }
+
+  @Get('user-metrics')
+  @Permissions(PERMISSIONS.CAN_VIEW_USERS)
+  getMetrics() {
+    return this.userService.getUserMetrics();
+  }
+
   @Get('me')
   async getCurrentUser(@ActiveUser() user: ActiveUserInterface) {
     return this.userService.findById(user.userId);

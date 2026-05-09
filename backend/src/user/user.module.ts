@@ -17,6 +17,8 @@ import { EmailModule } from 'src/email/email.module';
 import { Trade } from 'src/trade/entities/trade.entity';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
 import { BcryptProvider } from 'src/auth/providers/bcrypt.provider';
+import { UserGateWay } from './gateway/user.gateway';
+import { Positions } from 'src/positions/entities/position.entity';
 
 @Module({
   controllers: [UserController],
@@ -27,6 +29,7 @@ import { BcryptProvider } from 'src/auth/providers/bcrypt.provider';
       provide: HashingProvider,
       useClass: BcryptProvider,
     },
+    UserGateWay,
   ],
   imports: [
     TypeOrmModule.forFeature([
@@ -39,6 +42,7 @@ import { BcryptProvider } from 'src/auth/providers/bcrypt.provider';
       Notification,
       Kyc,
       Trade,
+      Positions,
     ]),
 
     CloudinaryModule,

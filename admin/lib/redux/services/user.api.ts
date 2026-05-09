@@ -21,20 +21,41 @@ export const userApi = lexerApi.injectEndpoints({
       },
       invalidatesTags: ["User"],
     }),
-    getUsers: builder.query<any[], { search?: string; limit?: number }>({
+    getUsers: builder.query<
+      any,
+      {
+        search?: string;
+        limit?: number;
+        kycStatus?: string;
+        accountStatus?: string;
+        page?: number;
+      }
+    >({
       query: (params) => ({
         url: "user",
         method: "GET",
         params,
       }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: "User" as const, id })),
-              { type: "User", id: "LIST" },
-            ]
-          : [{ type: "User", id: "LIST" }],
+      providesTags: ["User"],
     }),
+
+    getUserMetrics: builder.query<
+      {
+        totalUsers: number;
+        activeUsers: number;
+        pendingKyc: number;
+        suspendedUsers: number;
+        totalBalance: number;
+      },
+      void
+    >({
+      query: () => ({
+        url: "user/user-metrics",
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
+
     inviteUser: builder.mutation<
       any,
       { fullname: string; email: string; roleId: string }
@@ -86,4 +107,5 @@ export const {
   useUpdateUserMutation,
   useDeleteUserMutation,
   useGetUserDetailsQuery,
+  useGetUserMetricsQuery,
 } = userApi;

@@ -8,7 +8,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from '../entities/user.entity';
+import { User, UserStatus } from '../entities/user.entity';
 import { Like, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
@@ -27,6 +27,7 @@ import { AuthService } from 'src/auth/providers/auth.service';
 import { EmailService } from 'src/email/providers/email.service';
 import { ConfigService } from '@nestjs/config';
 import { Trade, TradeStatusEnum } from 'src/trade/entities/trade.entity';
+import { KYCStatus } from 'src/kyc/dtos';
 
 @Injectable()
 export class UserService {
@@ -175,23 +176,69 @@ export class UserService {
     getUsersQueryDto: GetUsersQueryDto,
     currentUser: ActiveUserInterface,
   ) {
+    const { search, kycStatus, accountStatus, page, limit } = getUsersQueryDto;
+
+    const take = limit || 10;
+    const skip = ((page || 1) - 1) * take;
+
+    const baseWhere: any = { id: Not(currentUser.userId) };
+
+    if (accountStatus && accountStatus !== 'ALL') {
+      baseWhere.status = accountStatus;
+    }
+
+    if (kycStatus && kycStatus !== 'ALL') {
+      baseWhere.kyc = { status: kycStatus };
+    }
+
     const queryOptions: any = {
       relations: ['role', 'kyc'],
       order: { createdAt: 'DESC' },
+      take: take,
+      skip: skip,
     };
 
-    const excludeSelf = { id: Not(currentUser.userId) };
-
-    if (getUsersQueryDto?.search) {
+    if (search) {
       queryOptions.where = [
-        { ...excludeSelf, fullname: Like(`%${getUsersQueryDto?.search}%`) },
-        { ...excludeSelf, email: Like(`%${getUsersQueryDto?.search}%`) },
-        { ...excludeSelf, tag: Like(`%${getUsersQueryDto?.search}%`) },
+        { ...baseWhere, fullname: Like(`%${search}%`) },
+        { ...baseWhere, email: Like(`%${search}%`) },
+        { ...baseWhere, tag: Like(`%${search}%`) },
       ];
     } else {
-      queryOptions.where = excludeSelf;
+      queryOptions.where = baseWhere;
     }
-    return await this.userRepository.find(queryOptions);
+
+    const [items, total] = await this.userRepository.findAndCount(queryOptions);
+
+    return {
+      items,
+      total,
+      page: page || 1,
+      lastPage: Math.ceil(total / take),
+    };
+  }
+
+  public async getUserMetrics() {
+    // We run these in parallel for better performance
+    const [total, active, pendingKyc, suspended, balanceData] =
+      await Promise.all([
+        this.userRepository.count(),
+        this.userRepository.countBy({ status: UserStatus.ACTIVE }),
+        this.userRepository.countBy({ kyc: { status: KYCStatus.PENDING } }),
+        this.userRepository.countBy({ status: UserStatus.SUSPENDED }),
+        this.userRepository
+          .createQueryBuilder('user')
+          .select('SUM(user.balance)', 'total')
+          .getRawOne(),
+      ]);
+
+    return {
+      totalUsers: total,
+      activeUsers: active,
+      pendingKyc: pendingKyc,
+      suspendedUsers: suspended,
+      totalBalance: parseFloat(balanceData?.total || '0'),
+    };
   }
 
   public async adminCreateUser(dto: CreateUserAdminDto) {
@@ -306,15 +353,7 @@ export class UserService {
   public async getUserDetails(id: string): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id },
-      relations: [
-        'role',
-        'kyc',
-        'trades',
-        'transactions',
-        'notifications',
-        'paymentMethods',
-        'loginHistories',
-      ],
+      relations: ['role', 'kyc'],
     });
 
     if (!user) {

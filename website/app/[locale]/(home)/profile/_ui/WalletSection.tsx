@@ -28,6 +28,8 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
+type StatusType = "PENDING" | "APPROVED" | "REJECTED" | undefined;
+
 export default function WalletSection({
   user,
 }: {
@@ -38,9 +40,7 @@ export default function WalletSection({
   const [addPaymentModalOpen, setIsAddPaymentModalOpen] = useState(false);
   const { data: methods, isLoading: methodsLoading } =
     useGetPaymentMethodsQuery();
-  const [status, setStatus] = useState<
-    "PENDING" | "APPROVED" | "REJECTED" | undefined
-  >(undefined);
+  const [status, setStatus] = useState<StatusType>(undefined);
   const [type, setType] = useState<"DEPOSIT" | "WITHDRAWAL">("WITHDRAWAL");
   const [withdraw, { isLoading: isSubmitting }] =
     useRequestWithdrawalMutation();
@@ -364,42 +364,15 @@ export default function WalletSection({
               </button>
             </div>
 
-            <Select
-              placeholder={
-                <div className="flex items-center gap-2 text-slate-500 font-bold">
-                  <Filter size={14} />
-                  <span>{t("STATUS_FILTER")}</span>
-                </div>
-              }
-              allowClear
-              onChange={(value) => setStatus(value)}
-              className="w-48 h-11.5 custom-select"
+            <select
+              onChange={(e) => setStatus(e.target.value as StatusType)}
+              className="px-4 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 outline-none cursor-pointer"
             >
-              <Select.Option value="PENDING">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-orange-500"></span>
-                  <span className="text-[10px] font-black uppercase tracking-wider">
-                    {t("STATUS_PENDING")}
-                  </span>
-                </div>
-              </Select.Option>
-              <Select.Option value="APPROVED">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-up"></span>
-                  <span className="text-[10px] font-black uppercase tracking-wider">
-                    {t("STATUS_APPROVED")}
-                  </span>
-                </div>
-              </Select.Option>
-              <Select.Option value="REJECTED">
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-red-500"></span>
-                  <span className="text-[10px] font-black uppercase tracking-wider">
-                    {t("STATUS_REJECTED")}
-                  </span>
-                </div>
-              </Select.Option>
-            </Select>
+              <option value="ALL">{t("STATUS_FILTER")}</option>
+              <option value="PENDING">{t("STATUS_PENDING")}</option>
+              <option value="APPROVED">{t("STATUS_APPROVED")}</option>
+              <option value="REJECTED">{t("STATUS_REJECTED")}</option>
+            </select>
           </div>
         </div>
 

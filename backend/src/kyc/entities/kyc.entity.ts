@@ -1,13 +1,22 @@
 import { IAvatar, User } from 'src/user/entities/user.entity';
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
+} from 'typeorm';
 
 export enum KYCStatus {
   PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
 }
 
-export type KYCDoc = "passport" | "id-card" | "driver-license"
+export type KYCDoc = 'passport' | 'id-card' | 'driver-license';
 
 @Entity()
 export class Kyc {
@@ -20,17 +29,17 @@ export class Kyc {
   @Column()
   country!: string;
 
-@Column({
+  @Column({
     type: 'simple-json',
     nullable: true,
   })
-  docData?: IAvatar
+  front?: IAvatar;
 
-    @Column({
+  @Column({
     type: 'simple-json',
     nullable: true,
   })
-  selfieData?: IAvatar
+  back?: IAvatar;
 
   @Column({
     type: 'enum',
@@ -47,11 +56,11 @@ export class Kyc {
   user!: User;
 
   @ManyToOne(() => User)
-@JoinColumn({ name: 'reviewedById' })
-reviewedBy?: User;
+  @JoinColumn({ name: 'reviewedById' })
+  reviewedBy?: User;
 
-@Column({ nullable: true })
-reviewedById?: string;
+  @Column({ nullable: true })
+  reviewedById?: string;
 
   @Column({ nullable: true })
   reviewedAt?: Date;

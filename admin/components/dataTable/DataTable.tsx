@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslations } from "use-intl";
 
@@ -16,6 +16,9 @@ interface DataTableProps<T> {
   itemsPerPage?: number;
   minWidth?: string;
   isLoading?: boolean;
+  totalItems?: number;
+  page?: number;
+  onPageChange?: (page: number) => void;
 }
 
 export default function DataTable<T>({
@@ -24,21 +27,51 @@ export default function DataTable<T>({
   itemsPerPage = 10,
   minWidth = "1200px",
   isLoading = false,
+  totalItems,
+  page: externalPage,
+  onPageChange,
 }: DataTableProps<T>) {
   const t = useTranslations();
-  const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(data.length / itemsPerPage);
-  const currentData = data.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  // Determine if we are using internal state or external server-side state
+  const isServerSide = totalItems !== undefined;
+  const [internalPage, setInternalPage] = React.useState(1);
+
+  const currentPage = isServerSide ? externalPage || 1 : internalPage;
+  const totalCount = isServerSide ? totalItems : data.length;
+  const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+  // If server-side, 'data' is already a slice. If client-side, we slice it here.
+  const currentData = isServerSide
+    ? data
+    : data.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePageChange = (newPage: number) => {
+    if (isServerSide && onPageChange) {
+      onPageChange(newPage);
+    } else {
+      setInternalPage(newPage);
+    }
+  };
 
   // Skeleton rows to match the table structure during loading
   const skeletonRows = Array.from({ length: itemsPerPage });
 
   return (
-    <div className="max-w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-bg shadow-sm">
+    <div className="relative max-w-full overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-bg shadow-sm">
+      {/* Optional: Visual loading bar at the top */}
+      {isLoading && (
+        <div className="absolute top-0 left-0 right-0 h-0.5 bg-brand/20 overflow-hidden z-10">
+          <div
+            className="h-full bg-brand w-1/3 animate-[loading_1.5s_infinite_linear]"
+            style={{
+              backgroundImage:
+                "linear-gradient(to right, transparent, currentColor, transparent)",
+            }}
+          />
+        </div>
+      )}
+
       <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800">
         <table
           className="w-full text-left border-collapse"
@@ -104,20 +137,20 @@ export default function DataTable<T>({
       </div>
 
       {/* --- Pagination Footer --- */}
-      {/* --- Pagination Footer --- */}
-      {!isLoading && data.length > 0 && (
+      {/* Hide footer while loading to prevent interaction with empty pages */}
+      {!isLoading && totalCount > 0 && (
         <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between bg-slate-50/30 dark:bg-slate-900/20 gap-4">
           <p className="text-xs font-bold text-slate-500 uppercase tracking-tighter">
             {t("SHOWING_ENTRIES", {
               from: (currentPage - 1) * itemsPerPage + 1,
-              to: Math.min(currentPage * itemsPerPage, data.length),
-              total: data.length,
+              to: Math.min(currentPage * itemsPerPage, totalCount),
+              total: totalCount,
             })}
           </p>
 
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
               disabled={currentPage === 1}
               className="p-2 border border-slate-200 dark:border-slate-800 rounded-xl disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
@@ -126,27 +159,27 @@ export default function DataTable<T>({
 
             <div className="flex items-center gap-1">
               {[...Array(totalPages)].map((_, i) => {
-                const page = i + 1;
+                const pageNum = i + 1;
                 if (
-                  page === 1 ||
-                  page === totalPages ||
-                  (page >= currentPage - 1 && page <= currentPage + 1)
+                  pageNum === 1 ||
+                  pageNum === totalPages ||
+                  (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
                 ) {
                   return (
                     <button
                       key={i}
-                      onClick={() => setCurrentPage(page)}
+                      onClick={() => handlePageChange(pageNum)}
                       className={`h-8 w-8 rounded-lg text-xs font-black transition-all cursor-pointer ${
-                        currentPage === page
+                        currentPage === pageNum
                           ? "bg-brand text-white shadow-lg shadow-brand/20"
                           : "text-slate-400 hover:text-fg"
                       }`}
                     >
-                      {page}
+                      {pageNum}
                     </button>
                   );
                 }
-                if (page === currentPage - 2 || page === currentPage + 2)
+                if (pageNum === currentPage - 2 || pageNum === currentPage + 2)
                   return (
                     <span key={i} className="text-slate-400">
                       ...
@@ -157,13 +190,22 @@ export default function DataTable<T>({
             </div>
 
             <button
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              onClick={() =>
+                handlePageChange(Math.min(currentPage + 1, totalPages))
+              }
               disabled={currentPage === totalPages}
               className="p-2 border border-slate-200 dark:border-slate-800 rounded-xl disabled:opacity-30 hover:bg-white dark:hover:bg-slate-800 transition-colors cursor-pointer"
             >
               <ChevronRight size={16} />
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Skeleton Footer for consistent height while loading */}
+      {isLoading && (
+        <div className="px-6 py-5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/20">
+          <div className="h-4 w-48 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
         </div>
       )}
     </div>

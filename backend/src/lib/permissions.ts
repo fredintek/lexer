@@ -2,11 +2,11 @@ export const PERMISSIONS = {
   // Trade Permissions
   CAN_TRADE: 'trade:execute',
   CAN_WITHDRAW: 'wallet:withdraw',
-  
+
   // User Management
   CAN_VIEW_USERS: 'users:read',
   CAN_EDIT_USERS: 'users:write',
-  
+
   // System
   CAN_ACCESS_ADMIN_PANEL: 'admin:access',
   CAN_MANAGE_ROLES: 'roles:manage',
@@ -16,6 +16,9 @@ export const PERMISSIONS = {
   CAN_MANAGE_BANK_ACCOUNTS: 'bank-account:manage',
 
   // Transactions
-  CAN_MANAGE_TRANSACTION: "transaction:manage",
-  CAN_BROADCAST_EMAIL: "email:broadcast",
+  CAN_MANAGE_TRANSACTION: 'transaction:manage',
+  CAN_BROADCAST_EMAIL: 'email:broadcast',
+
+  // Positions
+  CAN_MANAGE_POSITIONS: 'positions:manage',
 };

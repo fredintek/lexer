@@ -17,11 +17,14 @@ import {
   Clock,
   Eye,
   EyeOff,
+  Info,
   Loader2,
   Lock,
   Mail,
   ShieldCheck,
   Smartphone,
+  ToggleLeft,
+  ToggleRight,
   Upload,
   X,
   Zap,
@@ -53,9 +56,9 @@ export default function SecuritySection({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const kycStatus = user?.kyc?.status;
-  const isVerified = kycStatus === "ACTIVE";
+  const isVerified = kycStatus === "APPROVED";
   const isPending = kycStatus === "PENDING";
-  const isRejected = kycStatus === "INACTIVE";
+  const isRejected = kycStatus === "REJECTED";
 
   const [
     revokeOthers,
@@ -80,11 +83,11 @@ export default function SecuritySection({
   ] = useActivateTotpMutation();
 
   const [kycFiles, setKycFiles] = useState<{
-    document: File | null;
-    selfie: File | null;
-  }>({ document: null, selfie: null });
+    front: File | null;
+    back: File | null;
+  }>({ front: null, back: null });
   const [kycData, setKycData] = useState({
-    documentType: "passport",
+    documentType: "id-card",
     country: "Turkey",
   });
   const [submitKYC, { isLoading: isSubmittingKYC }] = useSubmitKYCMutation();
@@ -144,20 +147,20 @@ export default function SecuritySection({
   };
 
   const handleKYCUpload = async () => {
-    if (!kycFiles.document || !kycFiles.selfie) {
+    if (!kycFiles.front || !kycFiles.back) {
       return toast.error(t("KYC_FILE_ERROR"));
     }
 
     const formData = new FormData();
-    formData.append("document", kycFiles.document);
-    formData.append("selfie", kycFiles.selfie);
+    formData.append("front", kycFiles.front);
+    formData.append("back", kycFiles.back);
     formData.append("documentType", kycData.documentType);
     formData.append("country", kycData.country);
 
     try {
       await submitKYC(formData).unwrap();
       toast.success(t("KYC_SUCCESS"));
-      setKycFiles({ document: null, selfie: null });
+      setKycFiles({ front: null, back: null });
       refetchGetMe();
     } catch (err: any) {
       toast.error(err?.data?.message || t("FAIL_ACTION"));
@@ -213,6 +216,9 @@ export default function SecuritySection({
       setTotp((prev) => ({ ...prev, secret: setupTotpData.secret }));
   }, [setupTotpData]);
 
+  const inputClass =
+    "text-center px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-md outline-none transition-all";
+
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
       <header className="flex justify-between items-end">
@@ -260,7 +266,7 @@ export default function SecuritySection({
                   placeholder={t("PASSWORD_PLACEHOLDER")}
                   type={showCurrrentPassword ? "text" : "password"}
                   value={passwords.currentPassword}
-                  className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm font-black outline-none focus:border-brand"
+                  className={`${inputClass} text-left`}
                 />
                 <button
                   type="button"
@@ -285,7 +291,7 @@ export default function SecuritySection({
                     value={passwords.newPassword}
                     type={showNewPassword ? "text" : "password"}
                     placeholder={t("PASSWORD_PLACEHOLDER")}
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm font-black outline-none focus:border-brand"
+                    className={`${inputClass} text-left`}
                   />
                   <button
                     type="button"
@@ -305,7 +311,7 @@ export default function SecuritySection({
                     onChange={handleInputChange}
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder={t("PASSWORD_PLACEHOLDER")}
-                    className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-3 text-sm font-black outline-none focus:border-brand"
+                    className={`${inputClass} text-left`}
                   />
                   <button
                     type="button"
@@ -330,86 +336,135 @@ export default function SecuritySection({
             </button>
           </div>
 
-          {/* 2FA Setup */}
-          <div
-            className={`bg-bg border rounded-4xl p-8 transition-all ${twoFactorEnabled ? "border-up/30 bg-up/5" : "border-slate-200 dark:border-slate-800"}`}
-          >
-            <div className="flex justify-between items-start mb-8">
-              <div className="space-y-1">
-                <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
-                  <ShieldCheck
-                    size={18}
-                    className={twoFactorEnabled ? "text-up" : "text-slate-400"}
-                  />
-                  {t("TWO_FACTOR_TITLE")}
-                </h3>
-                <p className="text-xs text-slate-500 font-medium italic">
-                  {t("TWO_FACTOR_DESC")}
-                </p>
-              </div>
-              {!user?.mfaSecret ? (
-                <button
-                  onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
-                  className={`cursor-pointer relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${!twoFactorEnabled ? "bg-up" : "bg-slate-300 dark:bg-slate-700"}`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${!twoFactorEnabled ? "translate-x-6" : "translate-x-1"}`}
-                  />
-                </button>
-              ) : (
-                <CircleCheckBig className="text-up" />
-              )}
-            </div>
-
-            {!user?.mfaSecret && !twoFactorEnabled && (
-              <div className="flex flex-col md:flex-row gap-8 items-center bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
-                <div className="bg-white p-3 rounded-2xl border-4 border-slate-100">
-                  <div className="h-32 w-32">
-                    <img
-                      src={setupTotpData?.qrCodeImageUrl}
-                      alt="totp-qr-code"
-                      className="bg-cover w-full h-full"
-                    />
+          {/* 2FA Setup Container */}
+          {!user?.mfaSecret && (
+            <>
+              <div
+                className={`bg-bg border rounded-4xl p-8 transition-all ${user?.isTwoFactorEnabled ? "border-up/30 bg-up/5" : "border-slate-200 dark:border-slate-800"}`}
+              >
+                <div className="flex justify-between items-start mb-8">
+                  <div className="space-y-1">
+                    <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                      <ShieldCheck
+                        size={18}
+                        className={
+                          user?.isTwoFactorEnabled ? "text-up" : "text-brand"
+                        }
+                      />
+                      {t("TWO_FACTOR_TITLE")}
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium italic">
+                      {t("TWO_FACTOR_DESC")}
+                    </p>
                   </div>
-                </div>
-                <div className="flex-1 space-y-4 text-center md:text-left">
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
-                    {t("TOTP_STEP_1")}
-                    <br />
-                    {t("TOTP_STEP_2")}
-                    <br />
-                    {t("TOTP_STEP_3")}
-                  </p>
-                  <div className="flex flex-col gap-2">
-                    <input
-                      name="code"
-                      value={totp.code}
-                      type="text"
-                      maxLength={6}
-                      placeholder="000 000"
-                      onChange={(e) =>
-                        setTotp((prev) => ({
-                          ...prev,
-                          code: e.target.value.replace(/\D/g, ""),
-                        }))
-                      }
-                      className="w-full bg-bg border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-center text-lg font-black tracking-[0.2em] outline-none focus:border-brand"
-                    />
+
+                  {/* Main Toggle: Only shows if 2FA is NOT active */}
+                  {!user?.isTwoFactorEnabled && (
                     <button
-                      onClick={handleActivateTotp}
-                      className="cursor-pointer bg-brand text-white px-6 rounded-xl text-[10px] font-black uppercase tracking-widest py-3"
+                      onClick={() => setTwoFactorEnabled(!twoFactorEnabled)}
+                      className="cursor-pointer group outline-none focus:ring-0"
+                      aria-label="Toggle 2FA Setup"
                     >
-                      {activateTotpLoading ? (
-                        <Loader2 className="animate-spin" size={16} />
-                      ) : (
-                        <span>{t("ACTIVATE")}</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {twoFactorEnabled ? (
+                          <ToggleRight
+                            size={32}
+                            className="text-brand transition-all duration-300 ease-in-out transform group-hover:scale-110"
+                            fill="currentColor"
+                            fillOpacity={0.1}
+                          />
+                        ) : (
+                          <ToggleLeft
+                            size={32}
+                            className="text-slate-300 dark:text-slate-600 transition-all duration-300 ease-in-out transform group-hover:scale-110"
+                          />
+                        )}
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {/* SETUP FLOW: Only show if user hasn't finished activation */}
+                {!user?.isTwoFactorEnabled &&
+                  twoFactorEnabled &&
+                  setupTotpData && (
+                    <div className="flex flex-col md:flex-row gap-8 items-center bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-dashed border-brand/20 animate-in zoom-in-95">
+                      <div className="bg-bg p-3 rounded-2xl shrink-0">
+                        <img
+                          src={setupTotpData.qrCodeImageUrl}
+                          alt="QR"
+                          className="h-32 w-32"
+                        />
+                      </div>
+
+                      <div className="flex-1 space-y-4">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-black uppercase text-brand">
+                            {t("STEP_VERIFY")}
+                          </p>
+                          <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
+                            {t("TOTP_INSTRUCTION")}
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2 flex-col">
+                          <input
+                            value={totp.code}
+                            onChange={(e) =>
+                              setTotp({
+                                ...totp,
+                                code: e.target.value.replace(/\D/g, ""),
+                              })
+                            }
+                            placeholder="000000"
+                            maxLength={6}
+                            className={inputClass}
+                          />
+                          <button
+                            onClick={handleActivateTotp}
+                            disabled={
+                              totp.code.length !== 6 || activateTotpLoading
+                            }
+                            className="cursor-pointer bg-brand text-white px-6 py-4 rounded-xl text-[10px] font-black uppercase hover:opacity-90 disabled:opacity-30 transition-all"
+                          >
+                            {activateTotpLoading ? (
+                              <Loader2 className="animate-spin" />
+                            ) : (
+                              t("VERIFY")
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                {/* ACTIVE STATE */}
+                {user?.isTwoFactorEnabled && (
+                  <div className="flex items-center justify-between bg-up/10 border border-up/20 p-4 rounded-2xl">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-up text-white p-2 rounded-lg">
+                        <CheckCircle2 size={20} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black uppercase text-up">
+                          {t("MFA_ACTIVE")}
+                        </p>
+                        <p className="text-xs font-bold text-slate-500 uppercase">
+                          {user.mfaMethod}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleToggle(user.mfaMethod, true)}
+                      className="text-[10px] font-black uppercase text-slate-400 hover:text-down transition-colors cursor-pointer"
+                    >
+                      {t("DEACTIVATE")}
                     </button>
                   </div>
-                </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
 
           {/* MFA Toggles */}
           <div className="space-y-4">
@@ -488,7 +543,13 @@ export default function SecuritySection({
               </div>
               {kycStatus && (
                 <div
-                  className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${isVerified ? "bg-up/10 text-up" : isPending ? "bg-orange-500/10 text-orange-500" : "bg-down/10 text-down"}`}
+                  className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                    isVerified
+                      ? "bg-up/10 text-up"
+                      : isPending
+                        ? "bg-orange-500/10 text-orange-500"
+                        : "bg-down/10 text-down"
+                  }`}
                 >
                   {isVerified
                     ? t("KYC_STATUS_APPROVED")
@@ -500,9 +561,13 @@ export default function SecuritySection({
             </div>
 
             {isVerified || isPending ? (
-              <div className="p-10 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl text-center bg-slate-50/30">
+              <div className="p-10 border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-3xl text-center bg-bg">
                 <div
-                  className={`h-20 w-20 rounded-full mx-auto flex items-center justify-center mb-4 ${isVerified ? "bg-up text-white" : "bg-orange-500/10 text-orange-500 animate-pulse"}`}
+                  className={`h-20 w-20 rounded-full mx-auto flex items-center justify-center mb-4 ${
+                    isVerified
+                      ? "bg-up text-white"
+                      : "bg-orange-500/10 text-orange-500 animate-pulse"
+                  }`}
                 >
                   {isVerified ? (
                     <CheckCircle2 size={36} />
@@ -527,37 +592,53 @@ export default function SecuritySection({
               </div>
             ) : (
               <div className="space-y-6">
+                {/* Instruction Checklist */}
+                <div className="p-4 bg-brand/5 rounded-2xl border border-brand/10">
+                  <h5 className="text-[10px] font-black uppercase text-brand mb-2 flex items-center gap-2">
+                    <Info size={14} /> {t("KYC_REQUIREMENTS")}
+                  </h5>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {[
+                      t("REQ_FULL_NAME"),
+                      t("REQ_CLEAR_TEXT"),
+                      t("REQ_NO_GLARE"),
+                      t("REQ_EXPIRY_DATE"),
+                    ].map((req, i) => (
+                      <li
+                        key={i}
+                        className="text-[10px] font-bold text-slate-500 flex items-center gap-2"
+                      >
+                        <div className="w-1 h-1 rounded-full bg-brand" /> {req}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
                 {isRejected && (
-                  <div className="p-5 bg-down/5 border border-down/20 rounded-2xl flex gap-4 items-start">
+                  <div className="p-5 bg-down/5 border border-down/20 rounded-2xl flex gap-4 items-start animate-in fade-in zoom-in-95">
                     <AlertCircle className="text-down shrink-0" size={20} />
                     <div>
                       <p className="text-[10px] font-black uppercase text-down tracking-widest mb-1">
                         {t("VERIFICATION_REJECTED")}
                       </p>
-                      <p className="text-xs font-bold text-slate-600">
+                      <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
                         {user?.kyc?.rejectionReason || t("SECURITY_TIP_DESC")}
                       </p>
                     </div>
                   </div>
                 )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase text-slate-500 ml-2">
                       {t("DOCUMENT_TYPE")}
                     </label>
-                    <select
-                      value={kycData.documentType}
-                      onChange={(e) =>
-                        setKycData({ ...kycData, documentType: e.target.value })
-                      }
-                      className="w-full bg-slate-50 dark:bg-slate-900/50 border rounded-2xl px-5 py-4 text-sm font-black outline-none focus:border-brand"
-                    >
-                      <option value="passport">{t("PASSPORT")}</option>
-                      <option value="id-card">{t("ID_CARD")}</option>
-                      <option value="driver-license">
-                        {t("DRIVER_LICENSE")}
-                      </option>
-                    </select>
+                    <input
+                      type="text"
+                      value={t("TC_ID_NO")}
+                      disabled
+                      className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm outline-none focus:border-brand"
+                    />
                   </div>
                   <div className="flex flex-col gap-2">
                     <label className="text-[10px] font-black uppercase text-slate-500 ml-2">
@@ -570,32 +651,34 @@ export default function SecuritySection({
                         setKycData({ ...kycData, country: e.target.value })
                       }
                       placeholder="e.g. Turkey"
-                      className="w-full bg-slate-50 dark:bg-slate-900/50 border rounded-2xl px-5 py-4 text-sm font-black outline-none focus:border-brand"
+                      className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl px-5 py-4 text-sm outline-none focus:border-brand"
                     />
                   </div>
                 </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FileUploadBox
-                    label={t("DOCUMENT_PHOTO")}
+                    label={t("FRONT_SIDE")}
                     onFileSelect={(file) =>
-                      setKycFiles((prev) => ({ ...prev, document: file }))
+                      setKycFiles((prev) => ({ ...prev, front: file }))
                     }
-                    file={kycFiles.document}
+                    file={kycFiles.front}
                   />
                   <FileUploadBox
-                    label={t("SELFIE_PHOTO")}
+                    label={t("BACK_SIDE")}
                     onFileSelect={(file) =>
-                      setKycFiles((prev) => ({ ...prev, selfie: file }))
+                      setKycFiles((prev) => ({ ...prev, back: file }))
                     }
-                    file={kycFiles.selfie}
+                    file={kycFiles.back}
                   />
                 </div>
+
                 <button
                   onClick={handleKYCUpload}
                   disabled={
-                    isSubmittingKYC || !kycFiles.document || !kycFiles.selfie
+                    isSubmittingKYC || !kycFiles.front || !kycFiles.back
                   }
-                  className="w-full bg-fg text-bg dark:bg-white dark:text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand transition-all disabled:opacity-30"
+                  className="w-full bg-fg text-bg dark:bg-white dark:text-black py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-brand hover:text-white transition-all disabled:opacity-30 cursor-pointer shadow-xl shadow-brand/10"
                 >
                   {isSubmittingKYC ? (
                     <Loader2 className="animate-spin mx-auto" size={18} />
@@ -650,37 +733,59 @@ function FileUploadBox({
   file,
 }: {
   label: string;
-  onFileSelect: (file: File) => void;
+  onFileSelect: (file: File | null) => void;
   file: File | null;
 }) {
   const t = useTranslations();
+  const [preview, setPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
+    return () => URL.revokeObjectURL(objectUrl);
+  }, [file]);
 
   return (
     <div className="relative">
       <label className="text-[10px] font-black uppercase text-slate-500 ml-2 mb-2 block">
         {label}
       </label>
-      <div className="group relative h-32 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-brand transition-all flex flex-col items-center justify-center overflow-hidden bg-slate-50/50 dark:bg-transparent">
-        {file ? (
-          <div className="absolute inset-0 bg-up/10 flex flex-col items-center justify-center animate-in zoom-in-95">
-            <CheckCircle2 size={24} className="text-up mb-1" />
-            <span className="text-[10px] font-bold text-up truncate max-w-[80%]">
-              {file.name}
-            </span>
-            <button
-              onClick={() => onFileSelect(null as any)}
-              className="absolute top-2 right-2 p-1 bg-white dark:bg-slate-800 rounded-md shadow-sm"
-            >
-              <X size={12} className="text-slate-500" />
-            </button>
+      <div className="group relative h-44 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-brand transition-all flex flex-col items-center justify-center overflow-hidden bg-slate-50/50 dark:bg-slate-900/20">
+        {preview ? (
+          <div className="absolute inset-0 animate-in fade-in duration-300">
+            <img
+              src={preview}
+              alt="preview"
+              className="w-full h-full object-cover opacity-80"
+            />
+            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  onFileSelect(null);
+                }}
+                className="bg-down text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
+              >
+                {t("REMOVE")}
+              </button>
+            </div>
+            <div className="absolute bottom-3 left-3 bg-up text-white p-1.5 rounded-lg shadow-lg">
+              <CheckCircle2 size={14} />
+            </div>
           </div>
         ) : (
           <>
-            <Upload
-              size={20}
-              className="text-slate-400 group-hover:text-brand mb-2"
-            />
-            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest group-hover:text-brand">
+            <div className="p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-sm mb-3 group-hover:scale-110 transition-transform">
+              <Upload
+                size={24}
+                className="text-slate-400 group-hover:text-brand"
+              />
+            </div>
+            <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest group-hover:text-brand text-center px-6">
               {t("CLICK_TO_UPLOAD")}
             </span>
           </>
@@ -689,9 +794,9 @@ function FileUploadBox({
           type="file"
           accept="image/*"
           className="absolute inset-0 opacity-0 cursor-pointer"
-          onChange={(e) =>
-            e.target.files?.[0] && onFileSelect(e.target.files[0])
-          }
+          onChange={(e) => {
+            e.target.files?.[0] && onFileSelect(e.target.files[0]);
+          }}
         />
       </div>
     </div>

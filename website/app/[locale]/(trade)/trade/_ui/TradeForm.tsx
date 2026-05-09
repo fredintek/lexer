@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "@/i18n/navigation";
 import { formatCurrency } from "@/lib/helpers";
+import { useBuyPositionMutation } from "@/lib/redux/services/positions.api";
 import { useGetAllSettingsQuery } from "@/lib/redux/services/settings.api";
 import { usePlaceOrderMutation } from "@/lib/redux/services/trade.api";
 import { useGetStaticStockQuery } from "@/lib/redux/services/yfinance.api";
@@ -22,6 +23,8 @@ const TradeForm = ({
   const [price, setPrice] = useState(selectedSymbol?.price || 0);
 
   const [placeOrder, { isLoading }] = usePlaceOrderMutation();
+  const [buyPosition, { isLoading: isBuyingPosition }] =
+    useBuyPositionMutation();
   const { data: settings } = useGetAllSettingsQuery(undefined);
   const { data: stockInfo } = useGetStaticStockQuery(
     `${selectedSymbol?.symbol}.IS`,
@@ -118,12 +121,10 @@ const TradeForm = ({
     if (!selectedSymbol) return toast.error(t("SELECT_SYMBOL_ERROR"));
 
     try {
-      await placeOrder({
+      await buyPosition({
         symbol: selectedSymbol.symbol,
-        side: "BUY",
-        quantity: lot,
-        priceAtExecution: price,
-        commission,
+        lots: lot,
+        type: "BUYING",
       }).unwrap();
 
       toast.success(

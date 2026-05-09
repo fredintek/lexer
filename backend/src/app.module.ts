@@ -30,6 +30,7 @@ import { KycModule } from './kyc/kyc.module';
 import { YfinanceModule } from './yfinance/yfinance.module';
 import { TradeModule } from './trade/trade.module';
 import { SettingsModule } from './settings/settings.module';
+import { PositionsModule } from './positions/positions.module';
 import * as path from 'path';
 
 @Module({
@@ -94,6 +95,7 @@ import * as path from 'path';
     YfinanceModule,
     TradeModule,
     SettingsModule,
+    PositionsModule,
   ],
   controllers: [AppController],
   providers: [

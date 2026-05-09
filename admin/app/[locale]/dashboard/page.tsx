@@ -35,24 +35,27 @@ export default function OverviewPage() {
   const metrics = useMemo(() => {
     if (!users) return { totalLiquidity: 0, tierDist: { t1: 0, t2: 0, t3: 0 } };
 
-    const total = users.reduce(
-      (acc, u) =>
+    const total = users?.items?.reduce(
+      (acc: any, u: any) =>
         acc + (Number(u.balance) || 0) + (Number(u.frozenBalance) || 0),
       0,
     );
 
     const traders = Number(
-      users?.filter((user) => user?.role?.name === "TRADER")?.length,
+      users?.items?.filter((user: any) => user?.role?.name === "TRADER")
+        ?.length,
     );
 
     const tiers = {
-      t1: users.filter((u) => u.tier === 1).length,
-      t2: users.filter((u) => u.tier === 2).length,
-      t3: users.filter((u) => u.tier === 3).length,
+      t1: users?.items?.filter((u: any) => u.tier === 1).length,
+      t2: users?.items?.filter((u: any) => u.tier === 2).length,
+      t3: users?.items?.filter((u: any) => u.tier === 3).length,
     };
 
     const mfaCompliance =
-      (users?.filter((user) => user?.mfaSecret)?.length / users?.length) * 100;
+      (users?.items?.filter((user: any) => user?.mfaSecret)?.length /
+        users?.length) *
+      100;
 
     return { totalLiquidity: total, tierDist: tiers, traders, mfaCompliance };
   }, [users]);

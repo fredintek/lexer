@@ -1,24 +1,41 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './providers/auth.service';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from 'src/lib/constants';
-import { ForgotPasswordDto, LoginDto, RegisterDto, ResetPasswordDto, UpdateMfaDto, UpdatePasswordDto, VerifyLoginOtpDto } from './dtos';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+  UpdateMfaDto,
+  UpdatePasswordDto,
+  VerifyLoginOtpDto,
+} from './dtos';
 import { ActiveUser } from './decorators/activeUser.decorator';
 import { ActiveUserInterface } from 'src/lib/types';
 import { MFAEnum } from 'src/user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
-
-    constructor(
+  constructor(
     /**
      * Injecting Auth Service
      */
     private readonly authService: AuthService,
   ) {}
-// ================== BASIC AUTHENTICATION ========================
-   /**
+  // ================== BASIC AUTHENTICATION ========================
+  /**
    * SIGN UP
    * Authentication: false
    */
@@ -55,12 +72,12 @@ export class AuthController {
   public logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Body() logoutDto?: { isAdmin?: boolean }
+    @Body() logoutDto?: { isAdmin?: boolean },
   ) {
     return this.authService.logout(req, res, logoutDto?.isAdmin);
   }
 
-   /**
+  /**
    * REFRESH ACCESS TOKEN
    * Authentication: false
    */
@@ -70,12 +87,16 @@ export class AuthController {
   public refreshAccessToken(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Body() refreshAccessTokenDto?: { isAdmin?: boolean }
+    @Body() refreshAccessTokenDto?: { isAdmin?: boolean },
   ) {
-    return this.authService.refreshAccessToken(req, res, refreshAccessTokenDto?.isAdmin);
+    return this.authService.refreshAccessToken(
+      req,
+      res,
+      refreshAccessTokenDto?.isAdmin,
+    );
   }
 
-    /**
+  /**
    * FORGOT PASSWORD
    * Authentication: false
    */
@@ -86,7 +107,7 @@ export class AuthController {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
 
-    /**
+  /**
    * RESET PASSWORD
    * Authentication: false
    */
@@ -113,11 +134,10 @@ export class AuthController {
    * Get history
    * Authenticate: true
    */
-  @Get("login-history")
-  public getLoginHistory(@ActiveUser() currencyUser: ActiveUserInterface){
-    return this.authService.findLoginHistory(currencyUser)
+  @Get('login-history')
+  public getLoginHistory(@ActiveUser() currencyUser: ActiveUserInterface) {
+    return this.authService.findLoginHistory(currencyUser);
   }
-
 
   // ================== SESSION CONTROL ========================
   /**
@@ -132,27 +152,42 @@ export class AuthController {
     return await this.authService.revokeOtherSessions(currentUser, req);
   }
 
-
-
   // ================== 2FA (TOTP) ========================
   @Post('totp-setup')
   @HttpCode(HttpStatus.OK)
   async totpSetup(@ActiveUser() currentUser: ActiveUserInterface) {
     // Generate the QR code and secret
-    return await this.authService.generateTOTP2FASecret(currentUser);
+    return await this.authService.setupTotp(currentUser);
   }
 
   @Post('activate-totp')
   @HttpCode(HttpStatus.OK)
-  async activate(@ActiveUser() currentUser: ActiveUserInterface, @Body() body: { code: string; secret: string }) {
-    return await this.authService.activateTOTP2FA(currentUser, body.code, body.secret);
+  async activate(
+    @ActiveUser() currentUser: ActiveUserInterface,
+    @Body() body: { code: string; secret: string },
+  ) {
+    return await this.authService.activateTotp(
+      currentUser,
+      body.code,
+      body.secret,
+    );
   }
 
   @Post('verify-totp')
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
-  public async verifyLogin2FA(@Req() req: Request, @Res({passthrough: true}) res: Response, @Body() body: { code: string, createTokens?:boolean, userId: string }){
-    return this.authService.verifyTOTP2FA(body.userId, req, res, body.code, body.createTokens)
+  public async verifyLogin2FA(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: { code: string; createTokens?: boolean; userId: string },
+  ) {
+    return this.authService.verifyTOTP2FA(
+      body.userId,
+      req,
+      res,
+      body.code,
+      body.createTokens,
+    );
   }
 
   @Patch('toggle-mfa')
@@ -168,11 +203,13 @@ export class AuthController {
     );
   }
 
-
-    // ================== 2FA (EMAIL / SMS) ========================
+  // ================== 2FA (EMAIL / SMS) ========================
   @Post('request-otp')
   @HttpCode(HttpStatus.OK)
-  async requestOtp(@ActiveUser() currentUser: ActiveUserInterface, @Body() body: { method: MFAEnum.EMAIL | MFAEnum.SMS }) {
+  async requestOtp(
+    @ActiveUser() currentUser: ActiveUserInterface,
+    @Body() body: { method: MFAEnum.EMAIL | MFAEnum.SMS },
+  ) {
     if (body.method === MFAEnum.EMAIL) {
       return await this.authService.sendEmail2FA(currentUser);
     }
@@ -180,15 +217,21 @@ export class AuthController {
 
   @Patch('verify-email-otp')
   @HttpCode(HttpStatus.OK)
-  public async verifyEmailOtp(@ActiveUser() currentUser: ActiveUserInterface, @Body() body: { code: string }){
-    return this.authService.verifyEmailOTP(currentUser.userId, body.code)
+  public async verifyEmailOtp(
+    @ActiveUser() currentUser: ActiveUserInterface,
+    @Body() body: { code: string },
+  ) {
+    return this.authService.verifyEmailOTP(currentUser.userId, body.code);
   }
-
 
   @Patch('verify-login-otp')
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
-  public async verifyLoginOtp(@Body() verifyLoginOtpDto: VerifyLoginOtpDto, @Req() req: Request, @Res({ passthrough: true }) res: Response){
-    return this.authService.verifyLoginOtp(verifyLoginOtpDto, req, res)
+  public async verifyLoginOtp(
+    @Body() verifyLoginOtpDto: VerifyLoginOtpDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.verifyLoginOtp(verifyLoginOtpDto, req, res);
   }
 }

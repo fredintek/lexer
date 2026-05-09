@@ -1,11 +1,18 @@
-import { IsEnum, IsLowercase, IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
-import { KYCDoc } from "../entities/kyc.entity";
+import {
+  IsDateString,
+  IsEnum,
+  IsLowercase,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import { KYCDoc } from '../entities/kyc.entity';
 
-// kyc-status-update.dto.ts
 export enum KYCStatus {
   PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
 }
 
 export class UpdateKYCStatusDto {
@@ -15,6 +22,10 @@ export class UpdateKYCStatusDto {
   @IsString()
   @IsOptional()
   rejectionReason?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  adminId?: string;
 }
 
 export class CreateKycDto {
@@ -39,4 +50,20 @@ export class GetKycQueryDto {
   @IsOptional()
   @IsNumber()
   limit?: number;
+
+  @IsOptional()
+  @IsEnum(KYCStatus)
+  status?: KYCStatus;
+
+  // @IsOptional()
+  // @IsEnum(['id-card', 'passport', 'driver-license'])
+  // documentType?: string;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 }

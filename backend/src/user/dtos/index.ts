@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsBoolean,
   IsEmail,
@@ -31,8 +32,20 @@ export class GetUsersQueryDto {
   search?: string;
 
   @IsOptional()
+  @Type(() => Number)
+  page?: number = 1;
+
+  @IsOptional()
   @IsNumber()
   limit?: number;
+
+  @IsOptional()
+  @IsString()
+  kycStatus?: string;
+
+  @IsOptional()
+  @IsString()
+  accountStatus?: string;
 }
 
 export class UpdateUserAdminDto {
@@ -81,6 +94,14 @@ export class UpdateUserAdminDto {
     message: 'Identification number must contain only digits',
   })
   identificationNumber!: string;
+
+  @IsOptional()
+  @IsNumber()
+  frozenBalance?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isTwoFactorEnabled?: boolean;
 }
 
 export class CreateUserAdminDto {

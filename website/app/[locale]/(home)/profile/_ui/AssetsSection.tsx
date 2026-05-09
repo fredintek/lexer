@@ -1,204 +1,95 @@
 import DataTable, { Column } from "@/components/dataTable/DataTable";
-import { formatCurrency, getLogoUrl } from "@/lib/helpers";
+import { formatCurrency, formatDate, getLogoUrl } from "@/lib/helpers";
 import { tradeApi, useGetPositionsQuery } from "@/lib/redux/services/trade.api";
 import { useAppDispatch } from "@/lib/redux/store";
-import { ArrowDown, ArrowUp, LayoutGrid } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowDownRight,
+  ArrowUp,
+  ArrowUpRight,
+  Banknote,
+  Briefcase,
+  LayoutGrid,
+  Loader,
+  Wallet,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { io } from "socket.io-client";
 import SellModal from "./SellModal";
+import {
+  positionApi,
+  useCancelPositionMutation,
+  useGetMyAssetsQuery,
+} from "@/lib/redux/services/positions.api";
+import toast from "react-hot-toast";
 
 export default function AssetsSection() {
   const t = useTranslations();
   const dispatch = useAppDispatch();
-  const { data: positions, isLoading } = useGetPositionsQuery();
-  const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [sortBy, setSortBy] = useState<"quantity" | "equity" | "none">("none");
 
-  const handleOpenSellModal = (asset: any) => {
-    setSelectedAsset(asset);
-    setIsModalOpen(true);
+  // 1. Fetch the new aggregated API data
+  const { data: myAssets, isLoading: isMyAssetsLoading } =
+    useGetMyAssetsQuery(undefined);
+
+  console.log("myAssets", myAssets);
+
+  const [activeTab, setActiveTab] = useState<
+    "open" | "waiting" | "closed" | "cancelled"
+  >("open");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
+
+  const [cancelOrder, { isLoading: isOrderCancelling }] =
+    useCancelPositionMutation();
+
+  const handleCancelOrder = async (positionId: string) => {
+    try {
+      await cancelOrder({ positionId }).unwrap();
+      toast.success(t("ORDER_CANCELLED"));
+    } catch (err: any) {
+      toast.error(err?.data?.message || t("FAILED"));
+    }
   };
 
-  const columns: Column<any>[] = [
-    {
-      header: t("ASSET"),
-      render: (pos) => {
-        const logoUrl = getLogoUrl(pos.website);
-
-        return (
-          <div className="flex items-center gap-3">
-            <div className="relative w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden">
-              <img
-                src={logoUrl}
-                alt={pos.symbol}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).style.display = "none";
-                }}
-              />
-              <span className="absolute inset-0 flex items-center justify-center font-black text-[10px] uppercase z-[-1]">
-                {pos.symbol.substring(0, 2)}
-              </span>
-            </div>
-            <div>
-              <p className="text-xs font-black uppercase">{pos.symbol}</p>
-              <p className="text-[10px] text-slate-500 uppercase font-bold">
-                {t("BIST_EQUITY")}
-              </p>
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      header: t("QUANTITY"),
-      render: (pos) => (
-        <span className="text-xs font-black">
-          {pos.quantity} {t("LOT")}
-        </span>
-      ),
-    },
-    {
-      header: t("AVG_COST"),
-      render: (pos) => (
-        <span className="text-xs font-bold tabular-nums">
-          ₺{formatCurrency(pos.averageEntryPrice)}
-        </span>
-      ),
-    },
-    {
-      header: t("CURRENT_VALUE"),
-      render: (pos) => {
-        const pnl = (pos.currentPrice - pos.averageEntryPrice) * pos.quantity;
-        const isProfit = pnl >= 0;
-        return (
-          <div className="flex flex-col">
-            <span className="text-xs font-black tabular-nums">
-              ₺{formatCurrency(pos.currentPrice)}
-            </span>
-            <div
-              className={`flex items-center gap-0.5 text-[10px] font-black ${isProfit ? "text-up" : "text-down"}`}
-            >
-              {isProfit ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
-              {formatCurrency(pnl)} {t("TRY")}
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      header: t("TOTAL_COST"),
-      render: (pos) => (
-        <div className="flex flex-col">
-          <span className="text-xs font-black tabular-nums">
-            ₺{formatCurrency(pos.quantity * pos.averageEntryPrice)}
-          </span>
-          <span className="text-[10px] text-slate-500 font-bold">
-            {pos.quantity} × ₺{formatCurrency(pos.averageEntryPrice)}
-          </span>
-        </div>
-      ),
-    },
-    {
-      header: t("PNL"),
-      render: (pos) => {
-        const totalCost = pos.quantity * pos.averageEntryPrice;
-        const currentEquity = pos.quantity * pos.currentPrice;
-        const pnl = currentEquity - totalCost;
-        const pnlPercentage = (pnl / totalCost) * 100;
-        const isProfit = pnl >= 0;
-
-        return (
-          <div className="flex flex-col">
-            <span
-              className={`text-sm font-black tabular-nums ${isProfit ? "text-up" : "text-down"}`}
-            >
-              {isProfit ? "+" : ""}₺{formatCurrency(pnl)}
-            </span>
-            <div
-              className={`flex items-center gap-1 text-[10px] font-black ${isProfit ? "text-up" : "text-down"}`}
-            >
-              {isProfit ? <ArrowUp size={10} /> : <ArrowDown size={10} />}
-              {pnlPercentage.toFixed(2)}%
-            </div>
-          </div>
-        );
-      },
-    },
-    {
-      header: t("TOTAL_EQUITY"),
-      align: "right",
-      render: (pos) => {
-        const currentEquity = pos.quantity * pos.currentPrice;
-        const totalCost = pos.quantity * pos.averageEntryPrice;
-        const pnl = currentEquity - totalCost;
-        const isProfit = pnl >= 0;
-
-        return (
-          <div className="flex flex-col items-end">
-            <span className="text-sm font-black tabular-nums text-fg">
-              ₺{formatCurrency(currentEquity)}
-            </span>
-            <span
-              className={`text-[10px] flex items-center gap-1 font-bold ${isProfit ? "text-up" : "text-down"}`}
-            >
-              {isProfit ? <ArrowUp size={10} /> : <ArrowDown size={10} />}{" "}
-              {formatCurrency(Math.abs(pnl))}
-            </span>
-          </div>
-        );
-      },
-    },
-    {
-      header: t("ACTIONS"),
-      align: "right",
-      render: (pos) => (
-        <button
-          onClick={() => handleOpenSellModal(pos)}
-          className="cursor-pointer px-4 py-2 bg-down/10 text-down hover:bg-down hover:text-white rounded-lg text-[10px] font-black uppercase transition-all"
-        >
-          {t("SELL")}
-        </button>
-      ),
-    },
-  ];
-
-  const sortedPositions = useMemo(() => {
-    if (!positions) return [];
-
-    // Create a shallow copy to avoid mutating the original data
-    const data = [...positions];
-
-    if (sortBy === "quantity") {
-      return data.sort((a, b) => b.quantity - a.quantity);
-    }
-
-    if (sortBy === "equity") {
-      return data.sort((a, b) => {
-        const equityA = a.quantity * a.currentPrice;
-        const equityB = b.quantity * b.currentPrice;
-        return equityB - equityA;
-      });
-    }
-
-    return data;
-  }, [positions, sortBy]);
-
+  // 2. WebSocket Real-time Patching
   useEffect(() => {
     const socket = io(`${process.env.NEXT_PUBLIC_BASE_URL}/trade`);
 
     socket.on("marketUpdate", (allStocks) => {
       dispatch(
-        tradeApi.util.updateQueryData("getPositions", undefined, (draft) => {
-          draft.forEach((pos) => {
+        // We update the 'getMyAssets' cache directly
+        positionApi.util.updateQueryData("getMyAssets", undefined, (draft) => {
+          if (!draft?.tables?.open) return;
+
+          let newTotalUnrealizedPnL = 0;
+          let newLivePortfolioValue = 0;
+
+          draft.tables.open.forEach((pos: any) => {
             const live = allStocks.find((s: any) => s.symbol === pos.symbol);
             if (live) {
-              pos.currentPrice = live.price;
-              pos.pnl = (live.price - pos.averageEntryPrice) * pos.quantity;
+              const currentPrice = live.price;
+              pos.currentPrice = currentPrice;
+
+              // Calculate live P&L for this row
+              const pnl =
+                pos.type === "BUYING"
+                  ? (currentPrice - pos.startingPrice) * pos.lots
+                  : (pos.startingPrice - currentPrice) * pos.lots;
+
+              pos.livePnL = pnl * pos.multiplier - (pos.commission || 0);
+
+              newTotalUnrealizedPnL += pos.livePnL;
+              newLivePortfolioValue += Number(pos.marginUsed) + pos.livePnL;
             }
           });
+
+          // Update the top-level metrics in the cache so the cards update too
+          draft.metrics.instantaneousKZ = newTotalUnrealizedPnL;
+          draft.metrics.stockPortfolio =
+            newLivePortfolioValue + (draft.metrics.waitingMarginValue || 0);
+          draft.metrics.totalAssets =
+            draft.metrics.idleCash + draft.metrics.stockPortfolio;
         }),
       );
     });
@@ -208,65 +99,300 @@ export default function AssetsSection() {
     };
   }, [dispatch]);
 
+  // 3. Columns Definition (Dynamic based on Tab)
+  const columns = useMemo(() => {
+    const baseColumns = [
+      {
+        header: t("ASSET"),
+        render: (pos: any) => (
+          <div className="flex items-center gap-3">
+            {/* Logo logic here */}
+            <div className="w-10 h-10">
+              {getLogoUrl(pos?.website) ? (
+                <img
+                  src={getLogoUrl(pos?.website)}
+                  alt=""
+                  className="w-full h-full"
+                />
+              ) : (
+                <div className="text-white w-full h-full bg-brand/50 rounded-2xl flex items-center justify-center font-black">
+                  <p className="">{pos?.symbol?.slice(0, 2)}</p>
+                </div>
+              )}
+            </div>
+            <div>
+              <p className="text-xs font-black uppercase">{pos.symbol}</p>
+              <p className="text-[10px] text-slate-500 uppercase font-bold">
+                {pos.type}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        header: t("LOTS"),
+        render: (pos: any) => (
+          <span className="text-xs font-black">{pos.lots}</span>
+        ),
+      },
+    ];
+
+    if (activeTab === "open") {
+      return [
+        ...baseColumns,
+        {
+          header: t("ENTRY"),
+          render: (pos: any) => (
+            <span className="text-xs font-bold">
+              ₺{formatCurrency(pos.startingPrice)}
+            </span>
+          ),
+        },
+        {
+          header: t("LIVE_PRICE"),
+          render: (pos: any) => (
+            <span className="text-xs font-black text-brand">
+              ₺{formatCurrency(pos.currentPrice)}
+            </span>
+          ),
+        },
+        {
+          header: t("PNL"),
+          render: (pos: any) => (
+            <div
+              className={`text-xs font-black ${pos.livePnL >= 0 ? "text-up" : "text-down"}`}
+            >
+              ₺{formatCurrency(pos.livePnL)}
+            </div>
+          ),
+        },
+        {
+          header: t("ACTIONS"),
+          align: "right",
+          render: (pos: any) => (
+            <button
+              onClick={() => {
+                setSelectedAsset(pos);
+                setIsModalOpen(true);
+              }}
+              className="cursor-pointer px-4 py-2 bg-down text-white hover:bg-red-50 hover:text-red-600 rounded-lg text-[10px] font-black uppercase transition-all"
+            >
+              <span>{t("SELL")}</span>
+            </button>
+          ),
+        },
+      ];
+    }
+
+    if (activeTab === "waiting") {
+      return [
+        ...baseColumns,
+        {
+          header: t("ORDER_PRICE"),
+          render: (pos) => (
+            <span className="text-xs font-black">
+              ₺{formatCurrency(pos.startingPrice)}
+            </span>
+          ),
+        },
+        {
+          header: t("COST_PRICE"),
+          render: (pos) => (
+            <span className="text-xs font-black">
+              ₺{formatCurrency(pos.marginUsed)}
+            </span>
+          ),
+        },
+        {
+          header: t("STATUS"),
+          render: () => (
+            <span className="px-2 py-0.5 bg-amber-100 text-amber-600 rounded text-[10px] font-bold uppercase">
+              {t("MARKET_CLOSED")}
+            </span>
+          ),
+        },
+        {
+          header: t("ACTIONS"),
+          align: "right" as const,
+          render: (pos) => (
+            <button
+              disabled={isOrderCancelling}
+              onClick={() => handleCancelOrder(pos.id)}
+              className="cursor-pointer px-4 py-2 bg-down text-white hover:bg-red-50 hover:text-red-600 rounded-lg text-[10px] font-black uppercase transition-all"
+            >
+              {isOrderCancelling ? (
+                <Loader size={16} className="animate-spin" />
+              ) : (
+                <span>{t("CANCEL_ORDER")}</span>
+              )}
+            </button>
+          ),
+        },
+      ];
+    }
+
+    if (activeTab === "cancelled") {
+      return [
+        ...baseColumns,
+        {
+          header: t("ORDER_PRICE"),
+          render: (pos) => (
+            <span className="text-xs font-black">
+              ₺{formatCurrency(pos.startingPrice)}
+            </span>
+          ),
+        },
+        {
+          header: t("ORDER_DATE"),
+          render: (pos) => (
+            <span className="text-xs font-black">
+              {formatDate(pos.openingDate)}
+            </span>
+          ),
+        },
+        {
+          header: t("CLOSED_DATE"),
+          render: (pos) => (
+            <span className="text-xs font-black">
+              {formatDate(pos.closingDate)}
+            </span>
+          ),
+        },
+      ];
+    }
+
+    return baseColumns;
+  }, [activeTab, t]);
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-      <header>
-        <h1 className="text-3xl font-black uppercase tracking-tighter italic">
-          {t("PORTFOLIO_HOLDINGS")}
-        </h1>
-        <p className="text-slate-500 text-sm font-medium mt-2">
-          {t("PORTFOLIO_DESC")}
-        </p>
-      </header>
-      <div className="flex items-center gap-2">
-        <button
-          onClick={() => setSortBy(sortBy === "quantity" ? "none" : "quantity")}
-          className={`cursor-pointer px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all border ${
-            sortBy === "quantity"
-              ? "bg-brand text-white border-brand"
-              : "bg-transparent text-slate-500 border-slate-200"
-          }`}
-        >
-          {t("SORT_BY_LOTS")}
-        </button>
-        <button
-          onClick={() => setSortBy(sortBy === "equity" ? "none" : "equity")}
-          className={`cursor-pointer px-3 py-1.5 rounded-full text-[10px] font-black uppercase transition-all border ${
-            sortBy === "equity"
-              ? "bg-brand text-white border-brand"
-              : "bg-transparent text-slate-500 border-slate-200"
-          }`}
-        >
-          {t("SORT_BY_EQUITY")}
-        </button>
+    <div className="space-y-6">
+      {/* 4. METRIC CARDS SECTION */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <MetricCard
+          title={t("TOTAL_ASSETS")}
+          value={myAssets?.metrics?.totalAssets}
+          icon={<Wallet />}
+        />
+        <MetricCard
+          title={t("IDLE_CASH")}
+          value={myAssets?.metrics?.idleCash}
+          icon={<Banknote />}
+        />
+        <MetricCard
+          title={t("PORTFOLIO")}
+          value={myAssets?.metrics?.stockPortfolio}
+          icon={<Briefcase />}
+        />
+        <MetricCard
+          title={t("LIVE_PNL")}
+          value={myAssets?.metrics?.instantaneousKZ}
+          isTrend
+          color={myAssets?.metrics?.instantaneousKZ >= 0 ? "up" : "down"}
+        />
       </div>
 
-      {isLoading ? (
-        <div className="h-64 bg-slate-50 dark:bg-slate-900/50 animate-pulse rounded-3xl" />
-      ) : positions && positions?.length > 0 ? (
-        <div className="bg-white dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] overflow-hidden">
-          <DataTable
-            data={sortedPositions}
-            columns={columns}
-            itemsPerPage={10}
-          />
-        </div>
-      ) : (
-        <div className="py-20 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
-          <LayoutGrid size={40} className="mx-auto text-slate-300 mb-4" />
-          <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-            {t("PORTFOLIO_EMPTY")}
-          </p>
-        </div>
-      )}
+      {/* 5. TAB FILTERS */}
+      <div className="flex border-b border-slate-100 gap-6">
+        {(["open", "waiting", "cancelled", "closed"] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`cursor-pointer pb-4 text-xs font-black uppercase tracking-widest transition-all ${
+              activeTab === tab
+                ? "border-b-2 border-brand text-brand"
+                : "text-slate-400"
+            }`}
+          >
+            {t(tab.toUpperCase())} ({myAssets?.counts?.[tab] || 0})
+          </button>
+        ))}
+      </div>
 
-      {selectedAsset && (
-        <SellModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          asset={selectedAsset}
+      {/* 6. DATA TABLE */}
+      <div className="overflow-hidden">
+        <DataTable
+          columns={columns}
+          data={myAssets?.tables?.[activeTab] || []}
+          isLoading={isMyAssetsLoading}
         />
-      )}
+      </div>
+
+      <SellModal
+        asset={selectedAsset}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
+
+interface MetricCardProps {
+  title: string;
+  value: number | undefined;
+  icon?: React.ReactNode;
+  isTrend?: boolean; // If true, shows green/red colors for P&L
+  color?: "up" | "down" | "default";
+  prefix?: string;
+}
+
+const MetricCard = ({
+  title,
+  value = 0,
+  icon,
+  isTrend = false,
+  color = "default",
+  prefix = "₺",
+}: MetricCardProps) => {
+  // Determine text color based on trend or status
+  const getTextColor = () => {
+    if (color === "up" || (isTrend && value > 0)) return "text-up";
+    if (color === "down" || (isTrend && value < 0)) return "text-down";
+    return "text-fg";
+  };
+
+  // Helper to format currency safely
+  const formatValue = (val: number) => {
+    return new Intl.NumberFormat("tr-TR", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(val));
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 p-5 rounded-4xl flex flex-col justify-between transition-all hover:shadow-lg hover:shadow-slate-200/50 dark:hover:shadow-none">
+      <div className="flex items-center justify-between mb-4">
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+          {title}
+        </span>
+        {icon && (
+          <div className="p-2 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-500">
+            {icon}
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <div
+          className={`text-2xl font-black tracking-tighter tabular-nums ${getTextColor()}`}
+        >
+          {value < 0 ? "-" : isTrend && value > 0 ? "+" : ""}
+          {prefix}
+          {formatValue(value)}
+        </div>
+
+        {isTrend && (
+          <div
+            className={`flex items-center gap-1 text-[10px] font-black uppercase ${value >= 0 ? "text-up" : "text-down"}`}
+          >
+            {value >= 0 ? (
+              <ArrowUpRight size={14} strokeWidth={3} />
+            ) : (
+              <ArrowDownRight size={14} strokeWidth={3} />
+            )}
+            {value >= 0 ? "Profit" : "Loss"}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

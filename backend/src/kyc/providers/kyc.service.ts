@@ -14,7 +14,13 @@ import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 import { AVATAR_FOLDER, KYC_FOLDER } from 'src/lib/constants';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Kyc } from '../entities/kyc.entity';
-import { DataSource, Like, Repository } from 'typeorm';
+import {
+  Between,
+  DataSource,
+  FindOptionsWhere,
+  Like,
+  Repository,
+} from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
@@ -29,26 +35,44 @@ export class KycService {
   ) {}
 
   public async findAllRequests(getKycQueryDto: GetKycQueryDto) {
-    const queryOptions: any = {
-      relations: ['user'],
-      order: { createdAt: 'DESC' },
-    };
+    const { search, status, startDate, endDate } = getKycQueryDto;
 
-    if (getKycQueryDto?.search) {
-      queryOptions.where = [
-        { user: { fullname: Like(`%${getKycQueryDto?.search}%`) } },
-        { user: { email: Like(`%${getKycQueryDto?.search}%`) } },
-        { user: { tag: Like(`%${getKycQueryDto?.search}%`) } },
+    let where: FindOptionsWhere<Kyc> | FindOptionsWhere<Kyc>[] = {};
+
+    if (search) {
+      where = [
+        { user: { fullname: Like(`%${search}%`) } },
+        { user: { email: Like(`%${search}%`) } },
+        { user: { tag: Like(`%${search}%`) } },
       ];
     }
-    return await this.kycRepository.find(queryOptions);
+
+    const applyFilters = (baseWhere: FindOptionsWhere<Kyc>) => {
+      if (status) baseWhere.status = status;
+      if (startDate && endDate) {
+        baseWhere.createdAt = Between(new Date(startDate), new Date(endDate));
+      }
+      return baseWhere;
+    };
+
+    if (Array.isArray(where)) {
+      where = where.map((condition) => applyFilters(condition));
+    } else {
+      where = applyFilters(where);
+    }
+
+    return await this.kycRepository.find({
+      where,
+      relations: ['user', 'reviewedBy'],
+      order: { createdAt: 'DESC' },
+    });
   }
 
   public async createRequest(
     currentUser: ActiveUserInterface,
     createKycDto: CreateKycDto,
-    docFile: Express.Multer.File,
-    selfieFile: Express.Multer.File,
+    front: Express.Multer.File,
+    back: Express.Multer.File,
   ) {
     // 1. Find user and their existing KYC record
     const targetUser = await this.userRepository.findOne({
@@ -60,7 +84,7 @@ export class KycService {
 
     // 2. Prevent upload if already Active or Pending
     if (targetUser.kyc) {
-      if (targetUser.kyc.status === KYCStatus.ACTIVE) {
+      if (targetUser.kyc.status === KYCStatus.APPROVED) {
         throw new BadRequestException('You are already verified.');
       }
       if (targetUser.kyc.status === KYCStatus.PENDING) {
@@ -71,12 +95,12 @@ export class KycService {
     }
 
     // 3. Upload new images (Cloudinary)
-    const uploadedDoc = await this.cloudinaryService.uploadImage(
-      docFile,
+    const uploadedFront = await this.cloudinaryService.uploadImage(
+      front,
       KYC_FOLDER,
     );
-    const uploadedSelfie = await this.cloudinaryService.uploadImage(
-      selfieFile,
+    const uploadedBack = await this.cloudinaryService.uploadImage(
+      back,
       KYC_FOLDER,
     );
 
@@ -87,13 +111,13 @@ export class KycService {
       // RE-UPLOAD LOGIC: Update the existing instance
       kycInstance.documentType = createKycDto.documentType;
       kycInstance.country = createKycDto.country;
-      kycInstance.docData = {
-        url: uploadedDoc.secure_url,
-        publicId: uploadedDoc.public_id,
+      kycInstance.front = {
+        url: uploadedFront.secure_url,
+        publicId: uploadedFront.public_id,
       };
-      kycInstance.selfieData = {
-        url: uploadedSelfie.secure_url,
-        publicId: uploadedSelfie.public_id,
+      kycInstance.back = {
+        url: uploadedBack.secure_url,
+        publicId: uploadedBack.public_id,
       };
       kycInstance.status = KYCStatus.PENDING;
       kycInstance.rejectionReason = undefined;
@@ -101,13 +125,13 @@ export class KycService {
       // INITIAL UPLOAD: Create new instance
       kycInstance = this.kycRepository.create({
         ...createKycDto,
-        docData: {
-          url: uploadedDoc.secure_url,
-          publicId: uploadedDoc.public_id,
+        front: {
+          url: uploadedFront.secure_url,
+          publicId: uploadedFront.public_id,
         },
-        selfieData: {
-          url: uploadedSelfie.secure_url,
-          publicId: uploadedSelfie.public_id,
+        back: {
+          url: uploadedBack.secure_url,
+          publicId: uploadedBack.public_id,
         },
         status: KYCStatus.PENDING,
         user: targetUser,
@@ -133,7 +157,10 @@ export class KycService {
     }
 
     // 2. Prevent re-processing already active KYC
-    if (kyc.status === KYCStatus.ACTIVE && dto.status === KYCStatus.ACTIVE) {
+    if (
+      kyc.status === KYCStatus.APPROVED &&
+      dto.status === KYCStatus.APPROVED
+    ) {
       throw new BadRequestException('This KYC is already active');
     }
 
@@ -148,7 +175,7 @@ export class KycService {
       kyc.reviewedById = adminId;
       kyc.reviewedAt = new Date();
 
-      if (dto.status === KYCStatus.INACTIVE) {
+      if (dto.status === KYCStatus.REJECTED) {
         kyc.rejectionReason = dto.rejectionReason;
       } else {
         kyc.rejectionReason = undefined;
@@ -157,7 +184,7 @@ export class KycService {
       await queryRunner.manager.save(kyc);
 
       // 4. Upgrade User Tier if Approved
-      if (dto.status === KYCStatus.ACTIVE) {
+      if (dto.status === KYCStatus.APPROVED) {
         await queryRunner.manager.update(User, kyc.user.id, {
           tier: 2,
         });
