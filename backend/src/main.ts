@@ -37,6 +37,7 @@ async function bootstrap() {
 
   // should be >= 0 and < 65536
   const APP_PORT = Number(configService.get<number>('app.port'));
-  await app.listen(APP_PORT);
+  console.log("APP_PORT", APP_PORT)
+  await app.listen(APP_PORT, '0.0.0.0');
 }
 bootstrap();

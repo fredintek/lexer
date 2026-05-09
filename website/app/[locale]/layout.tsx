@@ -22,15 +22,18 @@ const raleway = Raleway({
 
 export const metadata: Metadata = {
   title: "Bulls Yatırım | Profesyonel Yatırım Platformu",
-  description:
-    "Bulls Yatırım ile BIST hisselerinde güvenle işlem yapın. Gerçek zamanlı veriler ve gelişmiş işlem araçları.",
-  keywords: [
-    "Bulls Yatırım",
-    "Borsa İstanbul",
-    "Hisse Senedi",
-    "Trading",
-    "Yatırım",
-  ],
+  description: "Bulls Yatırım ile BIST hisselerinde güvenle işlem yapın.",
+  keywords: ["Bulls Yatırım", "Borsa İstanbul", "Hisse Senedi"],
+  manifest: "/manifest.json",
+  icons: {
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    icon: [
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512x512.png", sizes: "512x512", type: "image/png" },
+    ],
+  },
 };
 
 type Props = {
