@@ -56,7 +56,9 @@ import { UserStatusGuard } from './auth/guards/user-status.guard';
           autoLoadEntities: true,
           synchronize: false,
           migrationsRun: true,
-          migrations: [path.join(__dirname, 'database/migrations/*.js')],
+          migrations: isProduction
+            ? ['dist/database/migrations/*.js']
+            : [path.join(__dirname, '../database/migrations/*.ts')],
           timezone: 'Z',
           charset: 'utf8mb4',
           collation: 'utf8mb4_unicode_ci',
