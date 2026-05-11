@@ -156,27 +156,7 @@ export default function ResetPasswordPage() {
         </div>
 
         {/* Password Requirements Checklist */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-            {t("PASSWORD_REQUIREMENTS")}
-          </h4>
-          <ul className="grid grid-cols-2 gap-y-1.5 gap-x-4">
-            {[
-              t("REQ_CHARS"),
-              t("REQ_UPPER"),
-              t("REQ_NUMBER"),
-              t("REQ_SYMBOL"),
-            ].map((req) => (
-              <li
-                key={req}
-                className="flex items-center gap-2 text-[11px] font-bold text-slate-400"
-              >
-                <div className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                {req}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="text-[11px] text-slate-400 px-1">{t("PASSWORD_HINT")}</p>
 
         {/* Submit Button */}
         <button

@@ -14,6 +14,7 @@ import { setRequestLocale } from "next-intl/server";
 import StoreProvider from "@/components/StoreProvider";
 import { Toaster } from "react-hot-toast";
 import NotificationSync from "@/components/NotificationSync";
+import AppWrapper from "@/components/AppWrapper";
 
 const raleway = Raleway({
   variable: "--font-raleway",
@@ -65,7 +66,8 @@ export default async function RootLayout({ children, params }: Props) {
       <body suppressHydrationWarning className="min-h-full flex flex-col">
         <StoreProvider>
           <NextIntlClientProvider>
-            {children} <Toaster />
+            <AppWrapper>{children}</AppWrapper>
+            <Toaster />
             <NotificationSync />
           </NextIntlClientProvider>
         </StoreProvider>

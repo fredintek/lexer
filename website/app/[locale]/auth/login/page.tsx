@@ -42,14 +42,24 @@ export default function LoginPage() {
         setUserId(res.userId);
         setShowMfa({ status: true, method: MFAEnum.EMAIL });
         toast.success(t("CHECK_EMAIL_CODE"));
+        return;
       }
 
       if (res.status === "APP_OTP_REQUIRED") {
         setUserId(res.userId);
         setShowMfa({ status: true, method: MFAEnum.TOTP });
         toast.success(t("OPEN_AUTH_APP"));
+        return;
       }
-    } catch (err: any) {}
+
+      toast.success(t("LOGIN_SUCCESS"));
+      router.refresh();
+    } catch (err: any) {
+      const message = Array.isArray(err?.data?.message)
+        ? err?.data?.message?.join(", ")
+        : err?.data?.message || t("LOGIN_FAILED");
+      toast.error(message);
+    }
   };
 
   const handleOtpSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -74,22 +84,14 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
-    if (isSuccess) {
-      if (!showMfa.status) {
-        toast.success(t("LOGIN_SUCCESS"));
-      }
-      router.refresh();
-    }
-
     if (error) {
       const errData = error as any;
       const message = Array.isArray(errData?.data?.message)
         ? errData?.data?.message?.join(", ")
         : errData?.data?.message || t("LOGIN_FAILED");
-
       toast.error(message);
     }
-  }, [isSuccess, error, showMfa, t]);
+  }, [error, t]);
 
   return (
     <div className="space-y-6">
@@ -160,6 +162,9 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            <p className="text-[11px] text-slate-400 px-1">
+              {t("PASSWORD_HINT")}
+            </p>
             <Link
               href="/auth/register"
               className="text-xs font-bold text-brand"

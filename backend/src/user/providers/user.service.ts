@@ -9,7 +9,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { User, UserStatus } from '../entities/user.entity';
-import { Like, Not, Repository } from 'typeorm';
+import { In, Like, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 import { ActiveUserInterface } from 'src/lib/types';
@@ -361,6 +361,15 @@ export class UserService {
     }
 
     return user;
+  }
+
+  public async getUserDetailsByIds(ids: string[]): Promise<User[]> {
+    if (!ids.length) return [];
+
+    return this.userRepository.find({
+      where: { id: In(ids) },
+      relations: ['role'],
+    });
   }
 
   public async getUserStatistics(userId: string) {

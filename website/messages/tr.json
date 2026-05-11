@@ -418,5 +418,6 @@
   "COST_PRICE": "Maliyet Fiyatı",
   "ORDER_CANCELLED": "Sipariş İptal Edildi",
   "CLOSED_DATE": "Kapalı Tarih",
-  "ORDER_DATE": "Sipariş Tarihi"
+  "ORDER_DATE": "Sipariş Tarihi",
+  "PASSWORD_HINT": "En az 8 karakter, en az bir harf ve bir rakam"
 }

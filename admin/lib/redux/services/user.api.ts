@@ -95,6 +95,10 @@ export const userApi = lexerApi.injectEndpoints({
       query: (id) => `/user/${id}`,
       providesTags: (result, error, id) => [{ type: "User", id }],
     }),
+    getUserDetailsByIds: builder.query<any, string[]>({
+      query: (ids) => `/user/by-ids?ids=${ids.join(",")}`,
+      providesTags: ["User"],
+    }),
   }),
 });
 
@@ -108,4 +112,5 @@ export const {
   useDeleteUserMutation,
   useGetUserDetailsQuery,
   useGetUserMetricsQuery,
+  useGetUserDetailsByIdsQuery,
 } = userApi;

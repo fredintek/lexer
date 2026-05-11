@@ -109,6 +109,12 @@ export class UserController {
     return this.userService.adminCreateUser(createUserAdminDto);
   }
 
+  @Get('by-ids')
+  async findByIds(@Query('ids') ids: string) {
+    const idsArray = ids.split(',').filter(Boolean);
+    return this.userService.getUserDetailsByIds(idsArray);
+  }
+
   @Get(':id')
   @UserStatus(
     UserStatusEnum.ACTIVE,

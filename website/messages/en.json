@@ -418,5 +418,6 @@
   "COST_PRICE": "Cost Price",
   "ORDER_CANCELLED": "Order Cancelled",
   "CLOSED_DATE": "Closed Date",
-  "ORDER_DATE": "Order Date"
+  "ORDER_DATE": "Order Date",
+  "PASSWORD_HINT": "Minimum 8 characters, at least one letter and one number"
 }

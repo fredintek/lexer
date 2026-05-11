@@ -76,7 +76,7 @@ export default function ProfilePage() {
     );
 
   return (
-    <div className="min-h-[calc(100vh-64px)] bg-bg text-fg">
+    <div className="box min-h-[calc(100vh-64px)] bg-bg text-fg">
       {/* --- Horizontal Tabs Navigation --- */}
       <div className="sticky top-0 z-30 bg-bg/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="box">

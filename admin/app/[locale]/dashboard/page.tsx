@@ -42,7 +42,7 @@ export default function OverviewPage() {
     );
 
     const traders = Number(
-      users?.items?.filter((user: any) => user?.role?.name === "TRADER")
+      users?.items?.filter((user: any) => user?.role?.name === "trader")
         ?.length,
     );
 
@@ -54,7 +54,7 @@ export default function OverviewPage() {
 
     const mfaCompliance =
       (users?.items?.filter((user: any) => user?.mfaSecret)?.length /
-        users?.length) *
+        users?.items?.length) *
       100;
 
     return { totalLiquidity: total, tierDist: tiers, traders, mfaCompliance };

@@ -206,6 +206,9 @@ export default function RegisterPage() {
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
           </div>
+          <p className="text-[11px] text-slate-400 px-1">
+            {t("PASSWORD_HINT")}
+          </p>
         </div>
 
         {/* Confirm Password Field */}
