@@ -143,3 +143,7 @@
 
 # =================== NGINX ===================
 /nginx
+/docker-dev-compose.yml
+/admin/Dockerfile.dev
+/website/Dockerfile.dev
+/backend/Dockerfile.dev
