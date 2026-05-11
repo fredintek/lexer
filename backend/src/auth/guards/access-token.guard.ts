@@ -6,10 +6,12 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { UserService } from 'src/user/providers/user.service';
 import { instanceToPlain } from 'class-transformer';
 import { REQUEST_USER_KEY } from 'src/lib/constants';
+import { UserStatus } from 'src/user/entities/user.entity';
+import { GenerateTokenProvider } from '../providers/generate-token.provider';
 
 @Injectable()
 export class AccessTokenGuard implements CanActivate {
@@ -28,11 +30,15 @@ export class AccessTokenGuard implements CanActivate {
      * Injecting User Service
      */
     private readonly userService: UserService,
+
+    private readonly tokenGenerator: GenerateTokenProvider,
   ) {}
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     // extract request
-    const request = context.switchToHttp().getRequest<Request>();
+    const httpContext = context.switchToHttp();
+    const request = httpContext.getRequest<Request>();
+    const response = httpContext.getResponse<Response>();
 
     // extract access token from the request
     const accessToken = this.extractTokenFromRequestHeader(request);
@@ -55,8 +61,16 @@ export class AccessTokenGuard implements CanActivate {
 
       if (!user) throw new UnauthorizedException('Invalid user');
 
+      if (user.status === UserStatus.DEACTIVATED) {
+        this.tokenGenerator.setRefreshCookie(response, '', 0);
+        throw new UnauthorizedException('Your account has been deactivated');
+      }
+
       // Add the user id to the request context
-      request[REQUEST_USER_KEY] = {...instanceToPlain(user), loginHistoryId: payload.loginHistoryId};
+      request[REQUEST_USER_KEY] = {
+        ...instanceToPlain(user),
+        loginHistoryId: payload.loginHistoryId,
+      };
 
       return true;
     } catch (error) {

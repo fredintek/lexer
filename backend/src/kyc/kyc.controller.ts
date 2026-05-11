@@ -11,13 +11,13 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { KycService } from './providers/kyc.service';
-import { Permissions } from 'src/auth/decorators/auth.decorator';
+import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
 import { PERMISSIONS } from 'src/lib/permissions';
 import { CreateKycDto, GetKycQueryDto, UpdateKYCStatusDto } from './dtos';
 import { ActiveUserInterface } from 'src/lib/types';
 import { ActiveUser } from 'src/auth/decorators/activeUser.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { GetUsersQueryDto } from 'src/user/dtos';
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 
 @Controller('kyc')
 export class KycController {
@@ -44,6 +44,12 @@ export class KycController {
   }
 
   @Post('upload')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'front', maxCount: 1 },

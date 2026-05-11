@@ -13,11 +13,19 @@ import { RefreshToken } from 'src/user/entities/refresh-tokens.entity';
 
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, {
+  providers: [
+    AuthService,
+    {
       provide: HashingProvider,
       useClass: BcryptProvider,
-    }, GenerateTokenProvider],
-    imports: [TypeOrmModule.forFeature([User, LoginHistory, RefreshToken]), EmailModule, forwardRef(() => UserModule)],
-    exports: [AuthService]
+    },
+    GenerateTokenProvider,
+  ],
+  imports: [
+    TypeOrmModule.forFeature([User, LoginHistory, RefreshToken]),
+    EmailModule,
+    forwardRef(() => UserModule),
+  ],
+  exports: [AuthService, GenerateTokenProvider],
 })
 export class AuthModule {}

@@ -13,19 +13,26 @@ import { WalletService } from './providers/wallet.service';
 import { ActiveUser } from 'src/auth/decorators/activeUser.decorator';
 import { ActiveUserInterface } from 'src/lib/types';
 import { CreateDepositDto, WithdrawRequestDto } from './dtos';
-import { Permissions } from 'src/auth/decorators/auth.decorator';
+import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   TransactionStatus,
   TransactionType,
 } from './entities/transaction.entity';
 import { PERMISSIONS } from 'src/lib/permissions';
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 
 @Controller('wallet')
 export class WalletController {
   constructor(private readonly walletService: WalletService) {}
 
   @Get('history')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async getHistory(
     @ActiveUser() currentUser: ActiveUserInterface,
     @Query('type') type?: TransactionType,

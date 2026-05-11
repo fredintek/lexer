@@ -32,6 +32,7 @@ import { TradeModule } from './trade/trade.module';
 import { SettingsModule } from './settings/settings.module';
 import { PositionsModule } from './positions/positions.module';
 import * as path from 'path';
+import { UserStatusGuard } from './auth/guards/user-status.guard';
 
 @Module({
   imports: [
@@ -103,6 +104,7 @@ import * as path from 'path';
     AccessTokenGuard,
     { provide: APP_GUARD, useClass: AuthenticationGuard },
     { provide: APP_GUARD, useClass: PermissionsGuard },
+    { provide: APP_GUARD, useClass: UserStatusGuard },
   ],
 })
 export class AppModule {}

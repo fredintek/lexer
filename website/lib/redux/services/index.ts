@@ -25,6 +25,25 @@ const baseQuery = fetchBaseQuery({
   credentials: "include",
 });
 
+const handleForceLogout = async (api: any, extraOptions: any) => {
+  try {
+    await baseQuery(
+      {
+        url: "/auth/logout",
+        method: "POST",
+      },
+      api,
+      extraOptions,
+    );
+  } catch (e) {
+    console.error("Logout request failed, proceeding with local cleanup");
+  }
+  api.dispatch(logout());
+  if (typeof window !== "undefined") {
+    window.location.replace("/auth/login");
+  }
+};
+
 const baseQueryWithReauth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -52,14 +71,12 @@ const baseQueryWithReauth: BaseQueryFn<
 
           // 5. Retry the original failed request
           result = await baseQuery(args, api, extraOptions);
+          if (result.error && result.error.status === 401) {
+            handleForceLogout(api, extraOptions);
+          }
         } else {
           // 6. Refresh failed -> Force logout
-          await baseQuery(
-            { url: "/auth/logout", method: "POST" },
-            api,
-            extraOptions,
-          );
-          api.dispatch(logout());
+          handleForceLogout(api, extraOptions);
         }
       } finally {
         release();

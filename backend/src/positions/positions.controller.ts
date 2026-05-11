@@ -7,12 +7,16 @@ import {
   EditUserPositionDto,
   SellPositionDto,
 } from './dtos';
+import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
+import { PERMISSIONS } from 'src/lib/permissions';
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 
 @Controller('positions')
 export class PositionsController {
   constructor(private readonly positionsService: PositionsService) {}
 
   @Get('all')
+  @Permissions(PERMISSIONS.CAN_MANAGE_POSITIONS)
   async getAllPositions() {
     return this.positionsService.getAllPositions();
   }
@@ -26,6 +30,12 @@ export class PositionsController {
   }
 
   @Get('my-assets')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async getMyAssets(@ActiveUser() user: ActiveUserInterface) {
     return await this.positionsService.getMyAssets(user?.userId);
   }
@@ -54,11 +64,13 @@ export class PositionsController {
   }
 
   @Get('user/:userId')
+  @Permissions(PERMISSIONS.CAN_MANAGE_POSITIONS)
   async getUserPositions(@Param('userId') userId: string) {
     return this.positionsService.getUserPositions(userId);
   }
 
   @Patch(':positionId/user/:userId')
+  @Permissions(PERMISSIONS.CAN_MANAGE_POSITIONS)
   async editUserPositionDto(
     @Param('userId') userId: string,
     @Param('positionId') positionId: string,

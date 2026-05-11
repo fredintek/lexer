@@ -6,7 +6,7 @@ import { HashingProvider } from './hashing.provider';
 export class BcryptProvider implements HashingProvider {
   public async hashPassword(data: string | Buffer): Promise<string> {
     // generate salt
-    const salt = await bcrypt.genSalt(16);
+    const salt = await bcrypt.genSalt(10);
 
     // hash password
     const hashedPassword = await bcrypt.hash(data, salt);

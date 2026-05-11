@@ -1,3 +1,4 @@
+import StatusBadge from "@/components/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/helpers";
 import {
   useGetMyStatsQuery,
@@ -174,6 +175,8 @@ export default function OverviewSection({
             </span>
           </div>
         </div>
+
+        <StatusBadge status={user?.status} />
       </div>
 
       <Modal

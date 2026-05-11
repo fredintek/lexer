@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   forwardRef,
   HttpException,
   Inject,
@@ -19,7 +20,7 @@ import {
 } from '../dtos';
 import { DataSource, EntityManager, Not, Repository } from 'typeorm';
 import { Request, Response } from 'express';
-import { MFAEnum, User } from 'src/user/entities/user.entity';
+import { MFAEnum, User, UserStatus } from 'src/user/entities/user.entity';
 import { HashingProvider } from './hashing.provider';
 import { GenerateTokenProvider } from './generate-token.provider';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -340,8 +341,13 @@ export class AuthService {
     const user = await this.userService.findUserByEmail(loginDto.email);
 
     // Generic Error for security
-    if (!user || !user.password) {
+    if (!user || !user.password || user.deletedAt) {
       throw new UnauthorizedException('Invalid email or password');
+    }
+
+    // deactivated user
+    if (user.status === UserStatus.DEACTIVATED) {
+      throw new ForbiddenException('Your account has been deactivated');
     }
 
     // --- ADD THIS ADMIN CHECK ---
@@ -362,58 +368,43 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // 4. Check if user is deleted or locked (optional but recommended for trading)
-    if (user.deletedAt) {
-      throw new UnauthorizedException('Account has been deactivated');
-    }
-
     try {
-      // Check if user enable otp
-      if (user.isTwoFactorEnabled && user.mfaMethod === MFAEnum.EMAIL) {
-        /**
-         * If OTP METHOD is EMAIL
-         * generate otp
-         * send the otp to the user
-         */
-        // generate OTP
-        const loginOtp = generateOTP();
+      // --- MFA BRANCH ---
+      if (user.isTwoFactorEnabled) {
+        if (user.mfaMethod === MFAEnum.EMAIL) {
+          const loginOtp = generateOTP();
+          const hashedLoginOtp = crypto
+            .createHash('sha256')
+            .update(loginOtp)
+            .digest('hex');
+          const loginOtpTokenExp = new Date(addMinuitesToCurrentTime(10));
 
-        // hash OTP
-        const hashedLoginOtp = crypto
-          .createHash('sha256')
-          .update(loginOtp)
-          .digest('hex');
+          // OPTIMIZATION 1: Don't await the Email! Fire and forget or use a Queue.
+          // We update the DB, but we don't wait for the SMTP server to respond.
+          await this.userRepository.update(user.id, {
+            mfaOtpCode: hashedLoginOtp,
+            mfaOtpExpires: loginOtpTokenExp,
+          });
 
-        // seting 10 minuites for login otp token expiration
-        const loginOtpTokenExp = new Date(addMinuitesToCurrentTime(10));
+          // Fire and forget (No 'await')
+          this.emailService
+            .sendLoginOtp(user, loginOtp, localizeDate(loginOtpTokenExp))
+            .catch((err) => console.error('MFA Email Failed', err));
 
-        // set new values to user and save user
-        await this.userRepository.update(user.id, {
-          mfaOtpCode: hashedLoginOtp,
-          mfaOtpExpires: loginOtpTokenExp,
-        });
+          return {
+            message: 'Please verify the code sent to your email',
+            status: 'EMAIL_OTP_REQUIRED',
+            userId: user.id,
+          };
+        }
 
-        // send login otp email
-        await this.emailService.sendLoginOtp(
-          user,
-          loginOtp,
-          localizeDate(loginOtpTokenExp),
-        );
-
-        // return temporary state for frontend
-        return {
-          message: 'Please verify the code sent to your email',
-          status: 'EMAIL_OTP_REQUIRED',
-          userId: user.id,
-        };
-      }
-
-      if (user.isTwoFactorEnabled && user.mfaMethod === MFAEnum.TOTP) {
-        return {
-          message: 'Open your Auth App',
-          status: 'APP_OTP_REQUIRED',
-          userId: user.id,
-        };
+        if (user.mfaMethod === MFAEnum.TOTP) {
+          return {
+            message: 'Open your Auth App',
+            status: 'APP_OTP_REQUIRED',
+            userId: user.id,
+          };
+        }
       }
 
       // generate login history
@@ -440,13 +431,6 @@ export class AuthService {
         undefined,
         loginDto.isAdmin,
       );
-
-      // Emit the event (This is non-blocking!)
-      // this.eventEmitter.emit('user.activity', {
-      //   userId: user.id,
-      //   type: 'LOGIN',
-      //   description: 'Login Successful',
-      // });
 
       // 8. Return data (Password is already excluded from savedUser/user via @Exclude)
       return {

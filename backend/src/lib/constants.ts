@@ -1,6 +1,7 @@
 export const REQUEST_USER_KEY = 'user';
 export const AUTH_TYPE_KEY = 'authType';
 export const PERMISSIONS_KEY = 'permissions';
+export const USER_STATUS_KEY = 'userStatus';
 export const REFRESH_TOKEN_ALIAS = 'refreshToken';
 export const PASSWORD_REGEX =
   /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;

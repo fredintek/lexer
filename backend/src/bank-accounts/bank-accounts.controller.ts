@@ -8,11 +8,12 @@ import {
   Delete,
 } from '@nestjs/common';
 import { BankAccountsService } from './providers/bank-accounts.service';
-import { Permissions } from 'src/auth/decorators/auth.decorator';
+import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
 import { CreateBankAccountDto, UpdateBankAccountDto } from './dtos';
 import { ActiveUser } from 'src/auth/decorators/activeUser.decorator';
 import { ActiveUserInterface } from 'src/lib/types';
 import { PERMISSIONS } from 'src/lib/permissions';
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 
 @Controller('admin/bank-accounts')
 export class BankAccountsController {
@@ -55,6 +56,12 @@ export class BankAccountsController {
   }
 
   @Get('active')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async getActive() {
     return this.service.getActiveAccount();
   }

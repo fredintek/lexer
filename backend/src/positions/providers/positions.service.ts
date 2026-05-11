@@ -1,12 +1,13 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { ActiveUserInterface } from 'src/lib/types';
 import { CreatePositionDto, EditUserPositionDto } from '../dtos';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { User, UserStatus } from 'src/user/entities/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
 import { YfinanceService } from 'src/yfinance/providers/yfinance.service';
 import { Positions, PositionStatus } from '../entities/position.entity';
@@ -26,18 +27,16 @@ export class PositionsService {
   ) {}
 
   public isMarketOpen(): boolean {
-    const now = new Date();
-    const day = now.getDay();
-    const hour = now.getHours();
+    // Get current day specifically in Turkey Time
+    const turkeyTime = new Date().toLocaleString('en-US', {
+      timeZone: 'Europe/Istanbul',
+      weekday: 'short',
+    });
 
-    // 1. Check if it's Weekend
-    const isWeekend = day === 0 || day === 6;
-    if (isWeekend) return false;
+    // turkeyTime will be "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", or "Sun"
+    const isWeekend = turkeyTime === 'Sat' || turkeyTime === 'Sun';
 
-    // 2. Check Trading Hours (Example: 10:00 - 18:00)
-    const isTradingHours = hour >= 10 && hour < 18;
-
-    return isTradingHours;
+    return !isWeekend;
   }
 
   public async createBuyOrder(

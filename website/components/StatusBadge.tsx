@@ -13,6 +13,7 @@ const StatusBadge = ({ status }: Props) => {
     CANCELLED: "bg-red-500/10 text-red-500 border-red-500/20",
     PENDING: "bg-orange-500/10 text-orange-500 border-orange-500/20",
     PAUSED: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+    SUSPENDED: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
   };
 
   return (

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AuthService } from './providers/auth.service';
-import { Auth } from './decorators/auth.decorator';
+import { Auth, UserStatus } from './decorators/auth.decorator';
 import { AuthType } from 'src/lib/constants';
 import {
   ForgotPasswordDto,
@@ -25,6 +25,7 @@ import {
 import { ActiveUser } from './decorators/activeUser.decorator';
 import { ActiveUserInterface } from 'src/lib/types';
 import { MFAEnum } from 'src/user/entities/user.entity';
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 
 @Controller('auth')
 export class AuthController {
@@ -68,6 +69,12 @@ export class AuthController {
    * Authentication: false
    */
   @Post('logout')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   @HttpCode(HttpStatus.OK)
   public logout(
     @Req() req: Request,
@@ -135,6 +142,12 @@ export class AuthController {
    * Authenticate: true
    */
   @Get('login-history')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   public getLoginHistory(@ActiveUser() currencyUser: ActiveUserInterface) {
     return this.authService.findLoginHistory(currencyUser);
   }
@@ -154,6 +167,12 @@ export class AuthController {
 
   // ================== 2FA (TOTP) ========================
   @Post('totp-setup')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   @HttpCode(HttpStatus.OK)
   async totpSetup(@ActiveUser() currentUser: ActiveUserInterface) {
     // Generate the QR code and secret

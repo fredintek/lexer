@@ -22,9 +22,9 @@ import {
   UpdateUserAdminDto,
   UpdateUserProfileDto,
 } from './dtos';
-import { Permissions } from 'src/auth/decorators/auth.decorator';
+import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
 import { PERMISSIONS } from 'src/lib/permissions';
-
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -45,11 +45,23 @@ export class UserController {
   }
 
   @Get('me')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async getCurrentUser(@ActiveUser() user: ActiveUserInterface) {
     return this.userService.findById(user.userId);
   }
 
   @Get('me/statistics')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async getMyStatistics(@ActiveUser() user: ActiveUserInterface) {
     return this.userService.getUserStatistics(user.userId);
   }
@@ -78,6 +90,12 @@ export class UserController {
   }
 
   @Patch('fcm-token')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async setFcmToken(
     @ActiveUser() user: ActiveUserInterface,
     @Body('token') token: string,
@@ -92,6 +110,12 @@ export class UserController {
   }
 
   @Get(':id')
+  @UserStatus(
+    UserStatusEnum.ACTIVE,
+    UserStatusEnum.PENDING,
+    UserStatusEnum.SUSPENDED,
+    UserStatusEnum.DEACTIVATED,
+  )
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     return await this.userService.getUserDetails(id);
   }
