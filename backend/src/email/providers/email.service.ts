@@ -24,9 +24,13 @@ export class EmailService {
     try {
       await this.mailerService.sendMail({
         to: user.email,
-        subject: 'Welcome to Lexus Trader',
+        subject: 'Welcome to Bulls Yatirim',
         template: 'welcome',
-        context: { user, ur: 'http://localhost:3001' },
+        context: {
+          user,
+          url: 'http://localhost:4356/auth/login',
+          preheader: 'Welcome to Bulls Yatırım — your account is ready.',
+        },
       });
     } catch (error) {
       console.log('welcome email error -->', error);
@@ -45,7 +49,12 @@ export class EmailService {
       to: user.email,
       subject: 'Reset your password',
       template: 'reset-password',
-      context: { user, token, expirationTime },
+      context: {
+        user,
+        token,
+        expirationTime,
+        preheader: 'Reset your Bulls Yatırım password.',
+      },
     });
   }
 
@@ -57,7 +66,12 @@ export class EmailService {
       to: user.email,
       subject: 'Verify your email',
       template: 'verify-email',
-      context: { user, token, expiration },
+      context: {
+        user,
+        token,
+        expiration,
+        preheader: 'Verify your Bulls Yatırım email address.',
+      },
     });
   }
 
@@ -76,16 +90,40 @@ export class EmailService {
   /**
    * Send generic email
    */
-  public async sendEmail(user: User, title: string, desc: string) {
+  public async sendEmail(
+    user: User,
+    title: string,
+    bodyHtml: string,
+    options?: {
+      badgeText?: string;
+      ctaText?: string;
+      ctaUrl?: string;
+      secondaryCtaText?: string;
+      secondaryCtaUrl?: string;
+      alertText?: string;
+    },
+  ) {
     try {
       await this.mailerService.sendMail({
         to: user.email,
-        subject: 'Lexus Trader',
+        subject: title,
         template: 'generic',
-        context: { user, title, desc },
+        context: {
+          title,
+          bodyHtml,
+          badgeText: options?.badgeText,
+          ctaText: options?.ctaText,
+          ctaUrl: options?.ctaUrl,
+          secondaryCtaText: options?.secondaryCtaText,
+          secondaryCtaUrl: options?.secondaryCtaUrl,
+          alertText: options?.alertText,
+          // supportUrl: this.configService.get('app.supportUrl'),
+          // termsUrl: this.configService.get('app.termsUrl'),
+          // privacyUrl: this.configService.get('app.privacyUrl'),
+        },
       });
     } catch (error) {
-      console.log('welcome email error -->', error);
+      console.error('Generic email error -->', error);
     }
   }
 

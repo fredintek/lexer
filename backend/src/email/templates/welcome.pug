@@ -1,39 +1,79 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    title Welcome to Lexus Trader
-    style.
-      body {
-        font-family: 'Helvetica Neue', sans-serif;
-        background-color: #f9f9f9;
-        padding: 40px;
-        color: #333;
-      }
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      }
-      .btn {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 12px 20px;
-        background-color: #4f46e5;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-      }
-  body
-    .container
-      h1 Welcome to Lexus Trader 🎉
-      p Hello #{user.fullname},
-      p We're excited to have you on board. Lexus Trader empowers you as a Professional Trader.
-      p Click below to explore your dashboard:
-      a.btn(href=url) Go to Dashboard
-      p If you have any questions, feel free to reply to this email.
-      p Cheers,  
-      p The Lexus Trader Team
+extends _base.pug
+
+block content
+  table.email-wrapper(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+    tr
+      td
+        table.email-container(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+          //- Header
+          tr
+            td.email-header
+              table(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+                tr
+                  td.logo-row
+                    table(role='presentation' cellpadding='0' cellspacing='0')
+                      tr
+                        td.logo-mark
+                          svg(width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg')
+                            path(d='M4 14L8 9L11 12L16 6' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round')
+                        td(style='width:10px')
+                        td.logo-text Bulls#[span .]Yatırım
+
+          //- Body
+          tr
+            td.email-body
+              p.badge Account Activated
+              h1.email-title Welcome aboard,#[br] #{user.fullname}!
+              p.email-subtitle
+                | Your Bulls Yatırım account has been created successfully. You now have access to real-time market data, portfolio management, and advanced trading tools.
+
+              //- Feature highlights
+              table(role='presentation' width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:28px')
+                tr
+                  td(style='padding:8px 0; border-bottom:1px solid #f1f5f9')
+                    table(role='presentation' cellpadding='0' cellspacing='0')
+                      tr
+                        td(style='width:32px; height:32px; background:#f0f7ff; border-radius:8px; text-align:center; vertical-align:middle; font-size:16px') 📈
+                        td(style='width:12px')
+                        td
+                          p(style='font-size:13px; font-weight:600; color:#0f172a; margin-bottom:2px') Real-Time Market Data
+                          p(style='font-size:12px; color:#64748b') Live prices, charts, and market depth
+                tr
+                  td(style='padding:8px 0; border-bottom:1px solid #f1f5f9')
+                    table(role='presentation' cellpadding='0' cellspacing='0')
+                      tr
+                        td(style='width:32px; height:32px; background:#f0fdf4; border-radius:8px; text-align:center; vertical-align:middle; font-size:16px') 💼
+                        td(style='width:12px')
+                        td
+                          p(style='font-size:13px; font-weight:600; color:#0f172a; margin-bottom:2px') Portfolio Management
+                          p(style='font-size:12px; color:#64748b') Track and manage all your positions
+                tr
+                  td(style='padding:8px 0')
+                    table(role='presentation' cellpadding='0' cellspacing='0')
+                      tr
+                        td(style='width:32px; height:32px; background:#fdf4ff; border-radius:8px; text-align:center; vertical-align:middle; font-size:16px') 🔒
+                        td(style='width:12px')
+                        td
+                          p(style='font-size:13px; font-weight:600; color:#0f172a; margin-bottom:2px') Secure Trading
+                          p(style='font-size:12px; color:#64748b') Bank-grade encryption on every transaction
+
+              a.btn-primary(href=url) Start Trading →
+
+              //- .divider
+
+              //- p(style='font-size:13px; color:#94a3b8; line-height:1.6')
+              //-   | Need help getting started? Visit our&nbsp;
+              //-   a(href=supportUrl style='color:#0052FF; text-decoration:none; font-weight:500') Help Center
+              //-   | &nbsp;or reply to this email.
+
+          //- Footer
+          tr
+            td.email-footer
+              p.footer-brand Bulls Yatırım
+              //- .footer-links
+              //-   a(href=termsUrl) Terms
+              //-   a(href=privacyUrl) Privacy
+              //-   a(href=supportUrl) Support
+              p.footer-text
+                | © #{new Date().getFullYear()} Bulls Yatırım. All rights reserved.#[br]
+                | You're receiving this because you created an account.

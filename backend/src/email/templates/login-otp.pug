@@ -1,64 +1,65 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    title Login Verification Code
-    style.
-      body {
-        font-family: 'Helvetica Neue', sans-serif;
-        background-color: #f4f7fa;
-        padding: 40px;
-        color: #333;
-      }
-      .container {
-        max-width: 500px;
-        margin: 0 auto;
-        background: white;
-        padding: 40px;
-        border-radius: 12px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        text-align: center;
-      }
-      .otp-container {
-        margin: 30px 0;
-        padding: 20px;
-        background-color: #f8fafc;
-        border: 2px dashed #e2e8f0;
-        border-radius: 8px;
-      }
-      .otp-code {
-        font-size: 32px;
-        font-weight: bold;
-        letter-spacing: 8px;
-        color: #4f46e5;
-        margin: 0;
-      }
-      .footer {
-        margin-top: 30px;
-        font-size: 14px;
-        color: #64748b;
-      }
-      .warning {
-        font-size: 12px;
-        color: #94a3b8;
-        margin-top: 20px;
-        border-top: 1px solid #f1f5f9;
-        padding-top: 20px;
-      }
-  body
-    .container
-      h2 Multi-Factor Authentication 🔐
-      p Hello #{user.fullname},
-      p Use the code below to complete your login. This code is only valid for a short time.
-      
-      .otp-container
-        p.otp-code #{token}
-      
-      p This session will expire in **#{expiration}**.
-      
-      .footer
-        p Cheers,
-        p **The Nexus Broker Team**
+include _base.pug
 
-      .warning
-        p If you did not attempt to log in, please secure your account immediately or contact support.
++emailLayout('Your Bulls Yatırım login verification code.')
+  table.email-wrapper(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+    tr
+      td
+        table.email-container(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+          tr
+            td.email-header
+              table(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+                tr
+                  td.logo-row
+                    table(role='presentation' cellpadding='0' cellspacing='0')
+                      tr
+                        td.logo-mark
+                          svg(width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg')
+                            path(d='M4 14L8 9L11 12L16 6' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round')
+                        td(style='width:10px')
+                        td.logo-text Bulls#[span .]Yatırım
+
+          tr
+            td.email-body
+              p.badge Two-Factor Authentication
+              h1.email-title Your login#[br] verification code
+              p.email-subtitle
+                | Hi #{user.fullname}, use the code below to complete your sign-in. This code expires at #[strong #{expiration}].
+
+              //- OTP Display
+              table(role='presentation' width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:28px')
+                tr
+                  td(style='text-align:center')
+                    .info-box(style='text-align:center')
+                      p.info-box-label One-Time Password
+                      p.info-box-value(style='font-size:36px; letter-spacing:0.2em; color:#0052FF')
+                        = token
+
+              table(role='presentation' width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:24px')
+                tr
+                  td(style='text-align:center; background:#f8faff; border-radius:10px; padding:12px')
+                    table(role='presentation' cellpadding='0' cellspacing='0' align='center')
+                      tr
+                        td(style='font-size:13px; color:#64748b')
+                          | ⏱&nbsp; Expires in&nbsp;
+                          strong(style='color:#0f172a') #{expiration}
+
+              .alert-box
+                strong 🔒 Never share this code.&nbsp;
+                | Bulls Yatırım will never ask for your OTP via phone, chat, or email. If you didn't request this, secure your account immediately.
+
+              //- .divider
+
+              //- p(style='font-size:13px; color:#94a3b8; line-height:1.6')
+              //-   | Having trouble?&nbsp;
+              //-   a(href=supportUrl style='color:#0052FF; text-decoration:none; font-weight:500') Contact support
+
+          tr
+            td.email-footer
+              p.footer-brand Bulls Yatırım
+              //- .footer-links
+              //-   a(href=termsUrl) Terms
+              //-   a(href=privacyUrl) Privacy
+              //-   a(href=supportUrl) Support
+              p.footer-text
+                | © #{new Date().getFullYear()} Bulls Yatırım. All rights reserved.#[br]
+                | This is an automated security email.
