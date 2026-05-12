@@ -5,6 +5,7 @@ import { RecipientMode, SendBroadcastDto } from '../dtos';
 import { In, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ActiveUserInterface } from 'src/lib/types';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class EmailService {
@@ -15,6 +16,8 @@ export class EmailService {
     private mailerService: MailerService,
 
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+
+    private configService: ConfigService,
   ) {}
 
   /**
@@ -28,7 +31,7 @@ export class EmailService {
         template: 'welcome',
         context: {
           user,
-          url: 'http://localhost:4356/auth/login',
+          url: `${this.configService.get('app.frontend_url')}/auth/login`,
           preheader: 'Welcome to Bulls Yatırım — your account is ready.',
         },
       });
