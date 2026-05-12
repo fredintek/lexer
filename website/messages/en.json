@@ -431,5 +431,6 @@
   "RESEND_CODE": "Resend Code",
   "EMAIL_VERIFIED_SUCCESS": "Your email has been verified successfully.",
   "ERROR_SENDING_OTP": "Failed to send verification email. Please try again.",
-  "INVALID_OTP": "Invalid or expired code. Please try again."
+  "INVALID_OTP": "Invalid or expired code. Please try again.",
+  "PASSWORD_DO_NOT_MATCH": "Passwords do not match"
 }

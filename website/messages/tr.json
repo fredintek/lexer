@@ -431,5 +431,6 @@
   "RESEND_CODE": "Kodu Tekrar Gönder",
   "EMAIL_VERIFIED_SUCCESS": "E-posta adresiniz başarıyla doğrulandı.",
   "ERROR_SENDING_OTP": "Doğrulama e-postası gönderilemedi. Lütfen tekrar deneyin.",
-  "INVALID_OTP": "Geçersiz veya süresi dolmuş kod. Lütfen tekrar deneyin."
+  "INVALID_OTP": "Geçersiz veya süresi dolmuş kod. Lütfen tekrar deneyin.",
+  "PASSWORD_DO_NOT_MATCH": "Şifreler eşleşmiyor"
 }
