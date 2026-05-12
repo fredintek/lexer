@@ -8,6 +8,7 @@ import { join } from 'path';
 import { cwd } from 'process';
 import { PugAdapter } from '@nestjs-modules/mailer/adapters/pug.adapter';
 import { EmailController } from './email.controller';
+import { MailtrapTransport } from 'mailtrap';
 
 @Module({
   providers: [EmailService],
@@ -18,15 +19,20 @@ import { EmailController } from './email.controller';
       useFactory: (configService: ConfigService) => {
         const env = configService.get<string>('app.env');
         return {
-          transport: {
-            host: configService.get<string>('mail.host'),
-            port: Number(configService.get<string>('mail.port')),
-            secure: false,
-            auth: {
-              user: configService.get<string>('mail.user'),
-              pass: configService.get<string>('mail.pass'),
-            },
-          },
+          transport: MailtrapTransport({
+            token: configService.get<string>(
+              'mail.mailtrap_api_token',
+            ) as string,
+          }),
+          // {
+          //   host: configService.get<string>('mail.host'),
+          //   port: Number(configService.get<string>('mail.port')),
+          //   secure: env === 'production',
+          //   auth: {
+          //     user: configService.get<string>('mail.user'),
+          //     pass: configService.get<string>('mail.pass'),
+          //   },
+          // },
           defaults: {
             from: `Bulls Yatirim <${configService.get<string>('mail.no_reply')}>`,
           },

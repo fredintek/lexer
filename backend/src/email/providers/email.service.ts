@@ -17,7 +17,7 @@ export class EmailService {
 
     @InjectRepository(User) private readonly userRepo: Repository<User>,
 
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   /**

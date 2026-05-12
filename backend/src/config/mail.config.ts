@@ -8,4 +8,5 @@ export default registerAs('mail', () => ({
   pass: process.env.MAIL_PASS,
   no_reply: process.env.NO_REPLY,
   email_otp_exp: process.env.EMAIL_OTP_EXPIRATION,
+  mailtrap_api_token: process.env.MAIL_API_TOKEN,
 }));
