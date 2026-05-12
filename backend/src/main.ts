@@ -9,7 +9,6 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
-  app.set('trust proxy', 1);
 
   const origins = configService.get('app.frontend_origins').split(',')
   
@@ -37,7 +36,6 @@ async function bootstrap() {
 
   // should be >= 0 and < 65536
   const APP_PORT = Number(configService.get<number>('app.port'));
-  console.log("APP_PORT", APP_PORT)
   await app.listen(APP_PORT, '0.0.0.0');
 }
 bootstrap();

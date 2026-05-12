@@ -51,6 +51,7 @@
   "RESET_SUCCESS": "Reset password successful",
   "DONT_HAVE_ACCOUNT?": "Don't have an account?",
   "REGISTER_TITLE": "Create Account",
+  "REGISTERATION_FAILED": "Registration Failed",
   "REGISTER_SUBTITLE": "Start your trading journey on",
   "FULL_NAME_LABEL": "Full Name",
   "FULL_NAME_PLACEHOLDER": "e.g. John Doe",
@@ -432,5 +433,5 @@
   "EMAIL_VERIFIED_SUCCESS": "Your email has been verified successfully.",
   "ERROR_SENDING_OTP": "Failed to send verification email. Please try again.",
   "INVALID_OTP": "Invalid or expired code. Please try again.",
-  "PASSWORD_DO_NOT_MATCH": "Passwords do not match"
+  "PASSWORDS_DO_NOT_MATCH": "Passwords do not match"
 }
