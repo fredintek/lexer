@@ -1,0 +1,223 @@
+html
+  head
+    meta(charset='UTF-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1.0')
+    meta(http-equiv='X-UA-Compatible' content='IE=edge')
+    title Bulls Yatırım
+    style.
+      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background-color: #f0f4f8;
+        font-family: 'DM Sans', Arial, sans-serif;
+        color: #0f172a;
+        -webkit-font-smoothing: antialiased;
+      }
+      .email-wrapper {
+        width: 100%;
+        background-color: #f0f4f8;
+        padding: 40px 16px;
+      }
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 32px rgba(0, 82, 255, 0.08);
+      }
+
+      /* Header */
+      .email-header {
+        background: #0f172a;
+        padding: 32px 40px;
+        position: relative;
+        overflow: hidden;
+      }
+      .email-header::before {
+        content: '';
+        position: absolute;
+        top: -60px; right: -60px;
+        width: 200px; height: 200px;
+        background: radial-gradient(circle, rgba(0,82,255,0.3) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+      .email-header::after {
+        content: '';
+        position: absolute;
+        bottom: -40px; left: 40px;
+        width: 120px; height: 120px;
+        background: radial-gradient(circle, rgba(0,209,178,0.2) 0%, transparent 70%);
+        border-radius: 50%;
+      }
+      .logo-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: relative;
+        z-index: 1;
+      }
+      .logo-mark {
+        width: 36px; height: 36px;
+        background: linear-gradient(135deg, #0052FF, #00d1b2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-mark svg { display: block; }
+      .logo-text {
+        font-family: 'Syne', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: -0.3px;
+      }
+      .logo-text span { color: #0052FF; }
+
+      /* Body */
+      .email-body {
+        padding: 40px 40px 32px;
+      }
+      .badge {
+        display: inline-block;
+        background: rgba(0,82,255,0.08);
+        color: #0052FF;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 4px 10px;
+        border-radius: 100px;
+        margin-bottom: 16px;
+      }
+      .email-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 26px;
+        font-weight: 800;
+        color: #0f172a;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+        margin-bottom: 12px;
+      }
+      .email-subtitle {
+        font-size: 15px;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 28px;
+      }
+
+      /* Info Box */
+      .info-box {
+        background: #f8faff;
+        border: 1px solid #e2e8ff;
+        border-left: 3px solid #0052FF;
+        border-radius: 10px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+      }
+      .info-box-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #94a3b8;
+        margin-bottom: 4px;
+      }
+      .info-box-value {
+        font-family: 'Syne', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #0f172a;
+        letter-spacing: 0.08em;
+      }
+
+      /* CTA Button */
+      .btn-primary {
+        display: inline-block;
+        background: linear-gradient(135deg, #0052FF, #0041cc);
+        color: #ffffff !important;
+        text-decoration: none;
+        font-family: 'Syne', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        padding: 14px 32px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+      }
+      .btn-secondary {
+        display: inline-block;
+        background: #f1f5f9;
+        color: #0f172a !important;
+        text-decoration: none;
+        font-family: 'Syne', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 14px 32px;
+        border-radius: 10px;
+        margin-bottom: 24px;
+      }
+
+      /* Divider */
+      .divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin: 24px 0;
+      }
+
+      /* Warning / Alert box */
+      .alert-box {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-radius: 10px;
+        padding: 14px 18px;
+        font-size: 13px;
+        color: #92400e;
+        line-height: 1.5;
+        margin-bottom: 24px;
+      }
+      .alert-box strong { color: #78350f; }
+
+      /* Footer */
+      .email-footer {
+        background: #f8fafc;
+        border-top: 1px solid #f1f5f9;
+        padding: 24px 40px;
+        text-align: center;
+      }
+      .footer-links {
+        margin-bottom: 12px;
+      }
+      .footer-links a {
+        color: #94a3b8;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        margin: 0 8px;
+      }
+      .footer-text {
+        font-size: 11px;
+        color: #cbd5e1;
+        line-height: 1.6;
+      }
+      .footer-brand {
+        font-family: 'Syne', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        color: #94a3b8;
+        margin-bottom: 8px;
+      }
+
+      @media only screen and (max-width: 480px) {
+        .email-body { padding: 28px 24px 24px; }
+        .email-header { padding: 24px; }
+        .email-footer { padding: 20px 24px; }
+        .email-title { font-size: 22px; }
+      }
+  body
+    span(style='display:none; max-height:0; overflow:hidden; mso-hide:all; font-size:1px; color:#f0f4f8; line-height:1px')
+      | #{preheader}
+      | &nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
+    block content

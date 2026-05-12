@@ -28,11 +28,12 @@ import { EmailController } from './email.controller';
             },
           },
           defaults: {
-            from: `Nexus Broker <${configService.get<string>('mail.no_reply')}>`,
+            from: `Bulls Yatirim <${configService.get<string>('mail.no_reply')}>`,
           },
           template: {
-            dir: join(cwd(), 'src', 'email', 'templates'),
-            adapter: new PugAdapter({ inlineCssEnabled: true }),
+            dir: join(cwd(), 'dist', 'email', 'templates'),
+            // dir: join(cwd(), 'src', 'email', 'templates'),
+            adapter: new PugAdapter({ inlineCssEnabled: false }),
           },
         };
       },

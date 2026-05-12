@@ -1,38 +1,63 @@
-doctype html
-html
-  head
-    meta(charset="UTF-8")
-    title Lexus Trader
-    style.
-      body {
-        font-family: 'Helvetica Neue', sans-serif;
-        background-color: #f9f9f9;
-        padding: 40px;
-        color: #333;
-      }
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-      }
-      .btn {
-        display: inline-block;
-        margin-top: 20px;
-        padding: 12px 20px;
-        background-color: #4f46e5;
-        color: white;
-        text-decoration: none;
-        border-radius: 6px;
-      }
-  body
-    .container
-      h1 Welcome to Lexus Trader 🎉
-      p Hello #{user.fullname},
-      p #{title}
-      p #{desc}
-      p If you have any questions, feel free to reply to this email.
-      p Cheers,  
-      p The Lexus Trader Team
+include _base.pug
+
++emailLayout(title)
+  table.email-wrapper(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+    tr
+      td
+        table.email-container(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+          tr
+            td.email-header
+              table(role='presentation' width='100%' cellpadding='0' cellspacing='0')
+                tr
+                  td.logo-row
+                    table(role='presentation' cellpadding='0' cellspacing='0')
+                      tr
+                        td.logo-mark
+                          svg(width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg')
+                            path(d='M4 14L8 9L11 12L16 6' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round')
+                        td(style='width:10px')
+                        td.logo-text Bulls#[span .]Yatırım
+
+          tr
+            td.email-body
+              if badgeText
+                p.badge= badgeText
+
+              h1.email-title= title
+
+              //- Dynamic body content
+              p.email-subtitle !{bodyHtml}
+
+              //- Optional alert box
+              if alertText
+                .alert-box !{alertText}
+
+              //- Optional divider before CTAs
+              if ctaText && ctaUrl
+                .divider
+
+              //- Primary CTA
+              if ctaText && ctaUrl
+                a.btn-primary(href=ctaUrl)= ctaText
+
+              //- Secondary CTA
+              if secondaryCtaText && secondaryCtaUrl
+                |  
+                a.btn-secondary(href=secondaryCtaUrl)= secondaryCtaText
+
+              .divider
+
+              //- p(style='font-size:13px; color:#94a3b8; line-height:1.6')
+              //-   | Questions?&nbsp;
+              //-   a(href=supportUrl style='color:#0052FF; text-decoration:none; font-weight:500') Contact our support team
+
+          tr
+            td.email-footer
+              p.footer-brand Bulls Yatırım
+              //- .footer-links
+              //-   a(href=termsUrl) Terms
+              //-   a(href=privacyUrl) Privacy
+              //-   a(href=supportUrl) Support
+              p.footer-text
+                | © #{new Date().getFullYear()} Bulls Yatırım. All rights reserved.#[br]
+                | You're receiving this because of your Bulls Yatırım account activity.
