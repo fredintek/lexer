@@ -95,7 +95,7 @@ export class SeedService implements OnApplicationBootstrap {
         const tag = `@LX-ADMIN-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
 
         // 4. Hash Password (using your HashingProvider)
-        const rawPassword = 'LexerAdmin123@';
+        const rawPassword = 'LexerAdmin123';
         const hashedPassword =
           await this.hashingProvider.hashPassword(rawPassword);
 
