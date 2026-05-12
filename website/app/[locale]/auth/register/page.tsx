@@ -76,11 +76,11 @@ export default function RegisterPage() {
         confirmPassword,
       }).unwrap();
 
-      toast.success(
-        t("REGISTRATION_SUCCESS") || "Account created successfully!",
-      );
+      // toast.success(
+      //   t("REGISTRATION_SUCCESS") || "Account created successfully!",
+      // );
     } catch (err: any) {
-      toast.error(err?.data?.message || t("REGISTRATION_FAILED"));
+      console.error(err?.data?.message || t("REGISTRATION_FAILED"));
     }
   };
 

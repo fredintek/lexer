@@ -3,9 +3,11 @@ import {
   useActivateTotpMutation,
   useChangePasswordMutation,
   useGetLoginHistoryQuery,
+  useRequestEmailOtpMutation,
   useRevokeOtherSessionsMutation,
   useToggleMfaMutation,
   useTotpSetupMutation,
+  useVerifyEmailOtpMutation,
 } from "@/lib/redux/services/auth.api";
 import { useSubmitKYCMutation } from "@/lib/redux/services/kyc.api";
 import { useGetMeQuery } from "@/lib/redux/services/user.api";
@@ -21,6 +23,7 @@ import {
   Loader2,
   Lock,
   Mail,
+  MailCheck,
   ShieldCheck,
   Smartphone,
   ToggleLeft,
@@ -40,7 +43,10 @@ export default function SecuritySection({
 }) {
   const t = useTranslations();
   const isTotpActive = user?.isTwoFactorEnabled && user?.mfaMethod === "TOTP";
-  const isEmailActive = user?.isTwoFactorEnabled && user?.mfaMethod === "EMAIL";
+  const isEmailActive =
+    user?.isEmailVerified &&
+    user?.isTwoFactorEnabled &&
+    user?.mfaMethod === "EMAIL";
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(true);
   const [passwords, setPasswords] = useState({
     currentPassword: "",
@@ -54,6 +60,9 @@ export default function SecuritySection({
   const [showCurrrentPassword, setShowCurrrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [otpSent, setOtpSent] = useState(false);
+  const [emailOtp, setEmailOtp] = useState("");
 
   const kycStatus = user?.kyc?.status;
   const isVerified = kycStatus === "APPROVED";
@@ -81,6 +90,10 @@ export default function SecuritySection({
       error: activateTotpError,
     },
   ] = useActivateTotpMutation();
+  const [requestEmailOtp, { isLoading: isRequestingEmailOtp }] =
+    useRequestEmailOtpMutation();
+  const [verifyEmailOtp, { isLoading: isVerifyingEmailOtp }] =
+    useVerifyEmailOtpMutation();
 
   const [kycFiles, setKycFiles] = useState<{
     front: File | null;
@@ -94,6 +107,27 @@ export default function SecuritySection({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
+  };
+
+  const handleSendVerificationEmail = async () => {
+    try {
+      await requestEmailOtp({}).unwrap();
+      setOtpSent(true);
+      toast.success(t("CHECK_YOUR_EMAIL"));
+    } catch (err) {
+      toast.error(t("ERROR_SENDING_OTP"));
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    try {
+      await verifyEmailOtp({ code: emailOtp });
+      toast.success(t("EMAIL_VERIFIED_SUCCESS"));
+      setOtpSent(false);
+      setEmailOtp("");
+    } catch (err) {
+      toast.error(t("INVALID_OTP"));
+    }
   };
 
   const handleUpdatePassword = async () => {
@@ -334,6 +368,113 @@ export default function SecuritySection({
             >
               {isLoading ? t("UPDATING") : t("SAVE_CHANGES")}
             </button>
+          </div>
+
+          {/* Email Verification */}
+          <div
+            className={`bg-bg border rounded-4xl p-8 transition-all ${
+              user?.isEmailVerified
+                ? "border-up/30 bg-up/5"
+                : "border-slate-200 dark:border-slate-800"
+            }`}
+          >
+            <div className="flex justify-between items-start mb-6">
+              <div className="space-y-1">
+                <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                  <MailCheck
+                    size={18}
+                    className={user?.isEmailVerified ? "text-up" : "text-brand"}
+                  />
+                  {t("EMAIL_VERIFICATION_TITLE")}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium italic">
+                  {user?.isEmailVerified
+                    ? t("EMAIL_VERIFICATION_DESC_VERIFIED")
+                    : t("EMAIL_VERIFICATION_DESC_UNVERIFIED")}
+                </p>
+              </div>
+              {user?.isEmailVerified && (
+                <div className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-up/10 text-up">
+                  {t("VERIFIED")}
+                </div>
+              )}
+            </div>
+
+            {user?.isEmailVerified ? (
+              /* Verified state */
+              <div className="flex items-center gap-3 bg-up/10 border border-up/20 p-4 rounded-2xl">
+                <div className="bg-up text-white p-2 rounded-lg">
+                  <CheckCircle2 size={20} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase text-up">
+                    {t("EMAIL_VERIFIED")}
+                  </p>
+                  <p className="text-xs font-bold text-slate-500 uppercase">
+                    {user.email}
+                  </p>
+                </div>
+              </div>
+            ) : otpSent ? (
+              /* OTP input state */
+              <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-dashed border-brand/20 animate-in zoom-in-95">
+                <div className="space-y-1">
+                  <p className="text-[10px] font-black uppercase text-brand">
+                    {t("CHECK_YOUR_EMAIL")}
+                  </p>
+                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-relaxed">
+                    {t("OTP_SENT_TO")}{" "}
+                    <span className="text-fg">{user?.email}</span>
+                  </p>
+                </div>
+                <div className="flex gap-2 flex-col">
+                  <input
+                    value={emailOtp}
+                    onChange={(e) =>
+                      setEmailOtp(e.target.value.replace(/\D/g, ""))
+                    }
+                    placeholder="000000"
+                    maxLength={6}
+                    className={inputClass}
+                  />
+                  <button
+                    onClick={handleVerifyEmailOtp}
+                    disabled={emailOtp.length !== 6 || isVerifyingEmailOtp}
+                    className="cursor-pointer bg-brand text-white px-6 py-4 rounded-xl text-[10px] font-black uppercase hover:opacity-90 disabled:opacity-30 transition-all"
+                  >
+                    {isVerifyingEmailOtp ? (
+                      <Loader2 className="animate-spin mx-auto" size={18} />
+                    ) : (
+                      t("VERIFY")
+                    )}
+                  </button>
+                  {isRequestingEmailOtp ? (
+                    <Loader2 className="animate-spin mx-auto" size={18} />
+                  ) : (
+                    <button
+                      onClick={handleSendVerificationEmail}
+                      disabled={isRequestingEmailOtp}
+                      className="cursor-pointer text-[10px] font-black uppercase text-slate-400 hover:text-brand transition-colors text-center mt-1"
+                    >
+                      {t("RESEND_CODE")}
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* Send OTP state */
+              <button
+                onClick={handleSendVerificationEmail}
+                disabled={isRequestingEmailOtp}
+                className="cursor-pointer bg-fg text-bg dark:bg-white dark:text-black px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-brand transition-all disabled:opacity-50"
+              >
+                {isRequestingEmailOtp ? (
+                  <Loader2 className="animate-spin mx-auto" size={18} />
+                ) : (
+                  t("SEND_VERIFICATION_EMAIL")
+                )}
+              </button>
+            )}
           </div>
 
           {/* 2FA Setup Container */}

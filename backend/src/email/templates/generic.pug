@@ -1,6 +1,6 @@
-include _base.pug
+extends _base.pug
 
-+emailLayout(title)
+block content
   table.email-wrapper(role='presentation' width='100%' cellpadding='0' cellspacing='0')
     tr
       td
@@ -23,7 +23,7 @@ include _base.pug
               if badgeText
                 p.badge= badgeText
 
-              h1.email-title= title
+              h1.email-title= preheader
 
               //- Dynamic body content
               p.email-subtitle !{bodyHtml}

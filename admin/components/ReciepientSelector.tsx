@@ -22,7 +22,7 @@ const RecipientSelector = ({
   const [query, setQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { data: users = [], isLoading } = useGetUsersQuery({ search: query });
+  const { data: users, isLoading } = useGetUsersQuery({ search: query });
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -52,8 +52,8 @@ const RecipientSelector = ({
     setQuery("");
   };
 
-  const selectedUserObjects = users.filter((u: any) =>
-    selectedIds.includes(u.id),
+  const selectedUserObjects = users?.items?.filter((u: any) =>
+    selectedIds?.includes(u.id),
   );
 
   return (
@@ -66,7 +66,7 @@ const RecipientSelector = ({
         className="flex flex-wrap gap-2 p-2 bg-bg border border-slate-200 dark:border-slate-800 rounded-2xl min-h-13 transition-all focus-within:border-brand focus-within:ring-1 ring-brand/10 cursor-text"
         onClick={() => setIsOpen(true)}
       >
-        {selectedUserObjects.map((user: any) => (
+        {selectedUserObjects?.map((user: any) => (
           <div
             key={user.id}
             className="flex items-center gap-1.5 pl-2 pr-1 py-1 bg-brand text-white rounded-lg animate-in zoom-in-95 duration-200"
@@ -109,8 +109,8 @@ const RecipientSelector = ({
       {isOpen && (
         <div className="absolute top-[calc(100%+8px)] left-0 w-full z-50 bg-bg border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-top-2">
           <div className="max-h-60 overflow-y-auto p-2 space-y-1 custom-scrollbar">
-            {users.length > 0 ? (
-              users
+            {users?.items?.length > 0 ? (
+              users?.items
                 ?.filter(
                   (user: any) =>
                     user?.id !== currentUser?.id &&

@@ -419,5 +419,17 @@
   "ORDER_CANCELLED": "Order Cancelled",
   "CLOSED_DATE": "Closed Date",
   "ORDER_DATE": "Order Date",
-  "PASSWORD_HINT": "Minimum 8 characters, at least one letter and one number"
+  "PASSWORD_HINT": "Minimum 8 characters, at least one letter and one number",
+  "EMAIL_VERIFICATION_TITLE": "Email Verification",
+  "EMAIL_VERIFICATION_DESC_VERIFIED": "Your email address has been successfully verified.",
+  "EMAIL_VERIFICATION_DESC_UNVERIFIED": "Verify your email address to secure your account.",
+  "VERIFIED": "Verified",
+  "EMAIL_VERIFIED": "Email Verified",
+  "CHECK_YOUR_EMAIL": "Check your email",
+  "OTP_SENT_TO": "We sent a verification code to",
+  "SEND_VERIFICATION_EMAIL": "Send Verification Email",
+  "RESEND_CODE": "Resend Code",
+  "EMAIL_VERIFIED_SUCCESS": "Your email has been verified successfully.",
+  "ERROR_SENDING_OTP": "Failed to send verification email. Please try again.",
+  "INVALID_OTP": "Invalid or expired code. Please try again."
 }

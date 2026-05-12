@@ -139,6 +139,13 @@ export class User {
   isWelcomeEmailSent!: boolean;
 
   @Column({
+    type: 'boolean',
+    nullable: false,
+    default: false,
+  })
+  isEmailVerified!: boolean;
+
+  @Column({
     type: 'simple-json',
     nullable: true,
   })

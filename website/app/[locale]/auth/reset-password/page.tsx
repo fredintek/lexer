@@ -31,16 +31,10 @@ export default function ResetPasswordPage() {
         confirmPassword: data.confirmPassword,
         token: data.token,
       }).unwrap();
-    } catch (err: any) {}
-  };
 
-  useEffect(() => {
-    if (isSuccess) {
       toast.success(t("RESET_SUCCESS"));
       router.replace("/auth/login");
-    }
-
-    if (error) {
+    } catch (error: any) {
       const errData = error as any;
       const message = Array.isArray(errData?.data?.message)
         ? errData?.data?.message?.join(", ")
@@ -48,7 +42,7 @@ export default function ResetPasswordPage() {
 
       toast.error(message);
     }
-  }, [isSuccess, error, t]);
+  };
 
   return (
     <div className="space-y-6">

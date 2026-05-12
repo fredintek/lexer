@@ -7,6 +7,7 @@ interface AuthState {
   accessToken: string | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  forgotPasswordEmail?: string | null;
 }
 
 type AuthPayload = {
@@ -47,6 +48,10 @@ const authSlice = createSlice({
       state.accessToken = null;
       state.isAuthenticated = false;
       state.isAdmin = false;
+    },
+
+    setForgotPassword: (state, action) => {
+      state.forgotPasswordEmail = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -96,12 +101,13 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, logout } = authSlice.actions;
+export const { setCredentials, logout, setForgotPassword } = authSlice.actions;
 
 export default authSlice.reducer;
 
 // Selectors for easy access in components
 export const selectCurrentUser = (state: { auth: AuthState }) =>
   state.auth.user;
+export const selectCurrentUserAuth = (state: { auth: AuthState }) => state.auth;
 export const selectIsAuthenticated = (state: { auth: AuthState }) =>
   state.auth.isAuthenticated;

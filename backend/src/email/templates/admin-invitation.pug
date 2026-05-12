@@ -1,6 +1,6 @@
-include _base.pug
+extends _base.pug
 
-+emailLayout('You have been invited to join Bulls Yatırım as an ADMIN!.')
+block content
   table.email-wrapper(role='presentation' width='100%' cellpadding='0' cellspacing='0')
     tr
       td
@@ -21,9 +21,9 @@ include _base.pug
           tr
             td.email-body
               p.badge(style='background:rgba(0,209,178,0.1); color:#00a896') Team Invitation
-              h1.email-title You've been#[br] invited to join as an admin!
+              h1.email-title You've been#[br] invited to join as a(an) #{role}!
               p.email-subtitle
-                | We have invited you to join Bulls Yatırım as an #[strong admin]. Set up your account to get started.
+                | We have invited you to join Bulls Yatırım as a(an) #[strong #{role}]. Set up your account to get started.
 
               //- Invitation details card
               table(role='presentation' width='100%' cellpadding='0' cellspacing='0' style='margin-bottom:28px')
@@ -37,7 +37,7 @@ include _base.pug
                       tr
                         td(style='padding:12px 0; border-bottom:1px solid #e2e8f0')
                           p(style='font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; margin-bottom:4px') Your Role
-                          p(style='font-size:14px; font-weight:600; color:#0052FF') Admin
+                          p(style='font-size:14px; font-weight:600; color:#0052FF') #{role}
                       tr
                         td(style='padding-top:12px')
                           p(style='font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; margin-bottom:4px') Fullname

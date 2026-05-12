@@ -1,7 +1,11 @@
 {
   "ANALYTICS": "Analizler",
   "OVERVIEW": "Genel Bakış",
+  "RESET_SUCCESS": "Şifre sıfırlama başarılı",
+  "RESET_PASSWORD_LINK": "Şifreyi Sıfırla",
+  "PASSWORD_HINT": "En az 8 karakter, en az bir harf ve bir rakam",
   "USER_MANAGEMENT": "Kullanıcı Yönetimi",
+  "EMAIL_SENT_SUCCESS": "Talimatlar e-posta ile gönderildi",
   "KYC_VERIFICATIONS": "KYC Doğrulamaları",
   "COMMUNICATION": "İletişim",
   "LIVE_CHAT": "Canlı Sohbet",

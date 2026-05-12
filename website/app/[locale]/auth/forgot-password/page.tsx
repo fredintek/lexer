@@ -27,24 +27,17 @@ export default function ForgotPasswordPage() {
         email: data.email,
       }).unwrap();
       dispatch(setForgotPassword(data?.email));
-    } catch (err: any) {}
-  };
-
-  useEffect(() => {
-    if (isSuccess) {
-      toast.success(t("EMAIL_SENT_SUCCESS"));
       setIsSubmitted(true);
-    }
-
-    if (error) {
+      toast.success(t("EMAIL_SENT_SUCCESS"));
+    } catch (error: any) {
       const errData = error as any;
       const message = Array.isArray(errData?.data?.message)
         ? errData?.data?.message?.join(", ")
         : errData?.data?.message || t("REQUEST_FAILED");
-
+      setIsSubmitted(false);
       toast.error(message);
     }
-  }, [isSuccess, error, t]);
+  };
 
   if (isSubmitted) {
     return (

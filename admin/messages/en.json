@@ -437,5 +437,9 @@
   "EDIT_POSITION": "Edit Position",
   "WARNING_ACTUAL_DATA": "Warning: Modifying actual financial data directly impacts the user's balance, profit/loss calculations, and margin requirements. Proceed with caution.",
   "DISPLAY_LAYER": "Display Layer (User View)",
-  "EMAIIL_ADDRESS": "Email Address"
+  "EMAIIL_ADDRESS": "Email Address",
+  "RESET_PASSWORD_LINK": "Reset Password",
+  "EMAIL_SENT_SUCCESS": "Email sent with instructions",
+  "PASSWORD_HINT": "Minimum 8 characters, at least one letter and one number",
+  "RESET_SUCCESS": "Reset password successful"
 }

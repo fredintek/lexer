@@ -1,21 +1,46 @@
 "use client";
 import React, { useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { Mail, ArrowLeft, Send, CheckCircle2 } from "lucide-react";
+import { Mail, ArrowLeft, Send, CheckCircle2, ArrowRight } from "lucide-react";
+import { useForgotPasswordMutation } from "@/lib/redux/services/auth.api";
+import { useAppDispatch } from "@/lib/redux/store";
+import { setForgotPassword } from "@/lib/redux/features/auth.slice";
+import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 
 export default function ForgotPasswordPage() {
-  const [isLoading, setIsLoading] = useState(false);
+  const t = useTranslations();
+  const dispatch = useAppDispatch();
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [
+    forgotPassword,
+    { isLoading: isForgotPasswordLoading, error, isSuccess },
+  ] = useForgotPasswordMutation();
 
-    // Simulate API Call
-    setTimeout(() => {
-      setIsLoading(false);
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      await forgotPassword({
+        email: data.email,
+      }).unwrap();
+      dispatch(setForgotPassword(data?.email));
       setIsSubmitted(true);
-    }, 1500);
+      toast.success(t("EMAIL_SENT_SUCCESS"));
+    } catch (error: any) {
+      const errData = error as any;
+      const message = Array.isArray(errData?.data?.message)
+        ? errData?.data?.message?.join(", ")
+        : errData?.data?.message || t("REQUEST_FAILED");
+
+      setIsSubmitted(false);
+
+      toast.error(message);
+    }
   };
 
   if (isSubmitted) {
@@ -36,11 +61,11 @@ export default function ForgotPasswordPage() {
           </p>
         </div>
         <Link
-          href="/auth/login"
+          href="/auth/reset-password"
           className="flex items-center justify-center gap-2 text-sm font-bold text-brand hover:underline"
         >
-          <ArrowLeft size={16} />
-          Return to login
+          {t("RESET_PASSWORD_LINK")}
+          <ArrowRight size={16} />
         </Link>
       </div>
     );
@@ -77,6 +102,7 @@ export default function ForgotPasswordPage() {
             </div>
             <input
               type="email"
+              name="email"
               required
               placeholder="e.g. support@bullsyatirim.com"
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
@@ -86,10 +112,10 @@ export default function ForgotPasswordPage() {
 
         <button
           type="submit"
-          disabled={isLoading}
+          disabled={isForgotPasswordLoading}
           className="w-full cursor-pointer group relative flex items-center justify-center rounded-xl bg-brand py-3.5 text-sm font-bold text-white shadow-lg shadow-brand/20 transition-all hover:bg-brand/90 hover:shadow-brand/40 active:scale-[0.98] disabled:opacity-70"
         >
-          {isLoading ? (
+          {isForgotPasswordLoading ? (
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
             <div className="flex items-center gap-2">

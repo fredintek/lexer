@@ -283,7 +283,8 @@ export class UserService {
       await this.emailService.sendAdminInvitation(savedUser.email, {
         fullname: savedUser.fullname,
         tempPassword: tempPassword,
-        loginUrl: `${this.configService.get('app.frontend_url')}/login`,
+        loginUrl: `${this.configService.get('app.frontend_url')}/auth/login`,
+        role: role?.name,
       });
 
       return savedUser;

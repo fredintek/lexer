@@ -92,7 +92,7 @@ export const authApi = apiReducer.injectEndpoints({
       query: () => ({
         url: "/auth/request-otp",
         method: "POST",
-        body: { method: 2 }, // MFAEnum.EMAIL = 2
+        body: { method: "EMAIL" },
       }),
     }),
     verifyEmailOtp: builder.mutation({
@@ -101,6 +101,7 @@ export const authApi = apiReducer.injectEndpoints({
         method: "PATCH",
         body,
       }),
+      invalidatesTags: ["User"],
     }),
     verifyLoginOtp: builder.mutation({
       query: (credentials) => ({

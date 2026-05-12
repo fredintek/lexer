@@ -1,17 +1,47 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Link } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Lock, ShieldCheck, Eye, EyeOff, Save, Mail, Key } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useAppSelector } from "@/lib/redux/store";
+import { selectCurrentUserAuth } from "@/lib/redux/features/auth.slice";
+import { useResetPasswordMutation } from "@/lib/redux/services/auth.api";
+import toast from "react-hot-toast";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
+  const t = useTranslations();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const currentUser = useAppSelector(selectCurrentUserAuth);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const [resetPassword, { isLoading, error, isSuccess }] =
+    useResetPasswordMutation();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Submit your email, token, and new password here
-    setTimeout(() => setIsLoading(false), 2000);
+
+    const formData = new FormData(e.currentTarget);
+    const data = Object.fromEntries(formData.entries());
+
+    try {
+      await resetPassword({
+        email: data.email,
+        password: data.password,
+        confirmPassword: data.confirmPassword,
+        token: data.token,
+      }).unwrap();
+
+      toast.success(t("RESET_SUCCESS"));
+      router.replace("/auth/login");
+    } catch (error: any) {
+      const errData = error as any;
+      const message = Array.isArray(errData?.data?.message)
+        ? errData?.data?.message?.join(", ")
+        : errData?.data?.message || t("REQUEST_FAILED");
+
+      toast.error(message);
+    }
   };
 
   return (
@@ -38,8 +68,9 @@ export default function ResetPasswordPage() {
               <Mail size={18} />
             </div>
             <input
+              name="email"
               type="email"
-              value={"john.doe@email.com"}
+              value={currentUser?.forgotPasswordEmail ?? ""}
               readOnly
               className="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-900/50 pl-11 pr-4 py-3 text-sm font-bold text-slate-500 cursor-not-allowed dark:border-slate-800"
             />
@@ -56,10 +87,10 @@ export default function ResetPasswordPage() {
               <Key size={18} />
             </div>
             <input
+              name="token"
               type="text"
-              readOnly
               placeholder="Enter Token..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-900/50 pl-11 pr-4 py-3 text-sm font-mono text-slate-500 cursor-not-allowed dark:border-slate-800"
+              className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-12 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
           </div>
         </div>
@@ -76,6 +107,7 @@ export default function ResetPasswordPage() {
               <Lock size={18} />
             </div>
             <input
+              name="password"
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
@@ -101,36 +133,24 @@ export default function ResetPasswordPage() {
               <ShieldCheck size={18} />
             </div>
             <input
+              name="confirmPassword"
               type={showPassword ? "text" : "password"}
               required
               placeholder="••••••••"
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-12 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-fg transition-colors cursor-pointer"
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </div>
         </div>
 
         {/* Password Requirements Checklist */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">
-            Requirements:
-          </h4>
-          <ul className="grid grid-cols-2 gap-y-1.5 gap-x-4">
-            {[
-              "At least 8 chars",
-              "One uppercase",
-              "One number",
-              "One symbol",
-            ].map((req) => (
-              <li
-                key={req}
-                className="flex items-center gap-2 text-[11px] font-bold text-slate-400"
-              >
-                <div className="h-1.5 w-1.5 rounded-full bg-slate-300 dark:bg-slate-700" />
-                {req}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <p className="text-[11px] text-slate-400 px-1">{t("PASSWORD_HINT")}</p>
 
         {/* Submit Button */}
         <button

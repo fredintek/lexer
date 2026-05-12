@@ -58,7 +58,7 @@ export default function LoginPage() {
       const message = Array.isArray(err?.data?.message)
         ? err?.data?.message?.join(", ")
         : err?.data?.message || t("LOGIN_FAILED");
-      toast.error(message);
+      console.error(message);
     }
   };
 

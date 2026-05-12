@@ -971,11 +971,15 @@ export class AuthService {
   public async verifyEmailOTP(userId: string, code: string) {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['id', 'mfaOtpCode', 'mfaOtpExpires'],
+      select: ['id', 'mfaOtpCode', 'mfaOtpExpires', 'isEmailVerified'],
     });
 
+    if (user?.isEmailVerified) {
+      throw new BadRequestException('Email Verified');
+    }
+
     if (!user || !user.mfaOtpCode) {
-      throw new UnauthorizedException('No active verification request found.');
+      throw new BadRequestException('No active verification request found.');
     }
 
     // 1. Hash the incoming plain code to compare with the stored hash
@@ -994,6 +998,7 @@ export class AuthService {
     await this.userRepository.update(user.id, {
       mfaOtpCode: null,
       mfaOtpExpires: null,
+      isEmailVerified: true,
     });
 
     return { success: true, message: 'OTP verified successfully' };
@@ -1040,6 +1045,11 @@ export class AuthService {
 
       case MFAEnum.EMAIL:
         // No extra check needed as email is verified/provided at registration
+        if (!user.isEmailVerified) {
+          throw new BadRequestException(
+            'TOTP has not been set up. Please verify your email',
+          );
+        }
         break;
 
       default:

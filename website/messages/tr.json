@@ -419,5 +419,17 @@
   "ORDER_CANCELLED": "Sipariş İptal Edildi",
   "CLOSED_DATE": "Kapalı Tarih",
   "ORDER_DATE": "Sipariş Tarihi",
-  "PASSWORD_HINT": "En az 8 karakter, en az bir harf ve bir rakam"
+  "PASSWORD_HINT": "En az 8 karakter, en az bir harf ve bir rakam",
+  "EMAIL_VERIFICATION_TITLE": "E-posta Doğrulama",
+  "EMAIL_VERIFICATION_DESC_VERIFIED": "E-posta adresiniz başarıyla doğrulandı.",
+  "EMAIL_VERIFICATION_DESC_UNVERIFIED": "Hesabınızı güvence altına almak için e-posta adresinizi doğrulayın.",
+  "VERIFIED": "Doğrulandı",
+  "EMAIL_VERIFIED": "E-posta Doğrulandı",
+  "CHECK_YOUR_EMAIL": "E-postanızı kontrol edin",
+  "OTP_SENT_TO": "Doğrulama kodu şu adrese gönderildi:",
+  "SEND_VERIFICATION_EMAIL": "Doğrulama E-postası Gönder",
+  "RESEND_CODE": "Kodu Tekrar Gönder",
+  "EMAIL_VERIFIED_SUCCESS": "E-posta adresiniz başarıyla doğrulandı.",
+  "ERROR_SENDING_OTP": "Doğrulama e-postası gönderilemedi. Lütfen tekrar deneyin.",
+  "INVALID_OTP": "Geçersiz veya süresi dolmuş kod. Lütfen tekrar deneyin."
 }

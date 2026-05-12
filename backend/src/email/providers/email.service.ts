@@ -83,7 +83,12 @@ export class EmailService {
       to: user.email,
       subject: 'Login OTP',
       template: 'login-otp',
-      context: { user, token, expiration },
+      context: {
+        user,
+        token,
+        expiration,
+        preheader: 'Your Bulls Yatırım login verification code.',
+      },
     });
   }
 
@@ -109,7 +114,7 @@ export class EmailService {
         subject: title,
         template: 'generic',
         context: {
-          title,
+          preheader: title,
           bodyHtml,
           badgeText: options?.badgeText,
           ctaText: options?.ctaText,
@@ -175,18 +180,26 @@ export class EmailService {
 
   public async sendAdminInvitation(
     email: string,
-    body: { fullname: string; tempPassword: string; loginUrl: string },
+    body: {
+      fullname: string;
+      tempPassword: string;
+      loginUrl: string;
+      role: string;
+    },
   ) {
     try {
       await this.mailerService.sendMail({
         to: email,
-        subject: 'New Lexer User',
+        subject: 'Bull Yatirim User Invitation',
         template: 'admin-invitation',
         context: {
           email,
           fullname: body.fullname,
           loginUrl: body.loginUrl,
           tempPassword: body.tempPassword,
+          role: body.role,
+          preheader:
+            'You have been invited to join Bulls Yatırım as an ADMIN!.',
         },
       });
     } catch (error) {
