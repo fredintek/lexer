@@ -20,26 +20,26 @@ import { MailtrapTransport } from 'mailtrap';
         const env = configService.get<string>('app.env');
         return {
           transport:
-            // MailtrapTransport({
-            //   token: configService.get<string>(
-            //     'mail.mailtrap_api_token',
-            //   ) as string,
-            // }),
-            {
-              host: configService.get<string>('mail.host'),
-              port: Number(configService.get<string>('mail.port')),
-              secure: env === 'production',
-              auth: {
-                user: configService.get<string>('mail.user'),
-                pass: configService.get<string>('mail.pass'),
-              },
-            },
+            MailtrapTransport({
+              token: configService.get<string>(
+                'mail.mailtrap_api_token',
+              ) as string,
+            }),
+            // {
+            //   host: configService.get<string>('mail.host'),
+            //   port: Number(configService.get<string>('mail.port')),
+            //   secure: env === 'production',
+            //   auth: {
+            //     user: configService.get<string>('mail.user'),
+            //     pass: configService.get<string>('mail.pass'),
+            //   },
+            // },
           defaults: {
             from: `Bulls Yatirim <${configService.get<string>('mail.no_reply')}>`,
           },
           template: {
-            // dir: join(cwd(), 'dist', 'email', 'templates'),
-            dir: join(cwd(), 'src', 'email', 'templates'),
+            dir: join(cwd(), 'dist', 'email', 'templates'),
+            // dir: join(cwd(), 'src', 'email', 'templates'),
             adapter: new PugAdapter({ inlineCssEnabled: false }),
           },
         };
