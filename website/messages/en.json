@@ -57,7 +57,7 @@
   "FULL_NAME_PLACEHOLDER": "e.g. John Doe",
   "EMAIL_PLACEHOLDER": "user@bullsyatirim.com",
   "PASSWORD_LABEL": "Password",
-  "PASSWORD_PLACEHOLDER": "Minimum 8 characters",
+  "PASSWORD_PLACEHOLDER": "Enter Password",
   "CONFIRM_PASSWORD_LABEL": "Confirm Password",
   "AGREEMENT_PREFIX": "I agree to Bulls Yatirim's",
   "TERMS_LINK": "Terms of Service",
@@ -433,5 +433,11 @@
   "EMAIL_VERIFIED_SUCCESS": "Your email has been verified successfully.",
   "ERROR_SENDING_OTP": "Failed to send verification email. Please try again.",
   "INVALID_OTP": "Invalid or expired code. Please try again.",
-  "PASSWORDS_DO_NOT_MATCH": "Passwords do not match"
+  "PASSWORDS_DO_NOT_MATCH": "Passwords do not match",
+  "PASSWORD_RULES_TITLE": "Password must contain",
+  "PASSWORD_RULE_LENGTH": "At least 8 characters",
+  "PASSWORD_RULE_LOWERCASE": "At least one lowercase letter",
+  "PASSWORD_RULE_UPPERCASE": "At least one uppercase letter",
+  "PASSWORD_RULE_NUMBER": "At least one number",
+  "PASSWORD_RULE_SPECIAL": "At least one special character (@$!%*#?&^_-)"
 }

@@ -4,8 +4,10 @@ import { Link, useRouter } from "@/i18n/navigation";
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { useLoginMutation } from "@/lib/redux/services/auth.api";
 import toast from "react-hot-toast";
+import { useTranslations } from "next-intl";
 
 export default function LoginPage() {
+  const t = useTranslations();
   const router = useRouter();
   const [login, { isLoading, error, isSuccess }] = useLoginMutation();
 
@@ -47,10 +49,10 @@ export default function LoginPage() {
       {/* 1. Header */}
       <div>
         <h1 className="text-3xl font-black tracking-tighter text-fg uppercase">
-          Welcome Back
+          {t("WELCOME_BACK")}
         </h1>
         <p className="text-sm font-medium text-slate-500 mt-1">
-          Enter your admin credentials to gain access
+          {t("LOGIN_DESC")}
         </p>
       </div>
 
@@ -59,7 +61,7 @@ export default function LoginPage() {
         {/* Email Field */}
         <div className="flex flex-col gap-2">
           <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-            Email Address
+            {t("EMAIL_ADDRESS")}
           </label>
           <div className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
@@ -80,13 +82,13 @@ export default function LoginPage() {
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between px-1">
             <label className="text-xs font-bold uppercase tracking-widest text-slate-400">
-              Password
+              {t("PASSWORD")}
             </label>
             <Link
               href="/auth/forgot-password"
               className="text-xs font-bold text-brand hover:underline"
             >
-              Forgot?
+              {t("FORGOT")}
             </Link>
           </div>
           <div className="relative group">
@@ -98,7 +100,7 @@ export default function LoginPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t("PASSWORD_PLACEHOLDER")}
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-12 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
             <button
@@ -108,6 +110,44 @@ export default function LoginPage() {
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
+          </div>
+          {/* PASSWORD RULES */}
+          <div className="mt-1 px-1 space-y-2">
+            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+              {t("PASSWORD_RULES_TITLE")}
+            </p>
+            <ul className="space-y-1">
+              {[
+                { key: "PASSWORD_RULE_LENGTH" },
+                { key: "PASSWORD_RULE_UPPERCASE" },
+                { key: "PASSWORD_RULE_NUMBER" },
+                { key: "PASSWORD_RULE_SPECIAL" },
+              ].map(({ key }) => (
+                <li
+                  key={key}
+                  className="flex items-center gap-2 text-[11px] font-medium text-slate-400"
+                >
+                  <div className="w-1 h-1 rounded-full bg-brand shrink-0" />
+                  {t(key)}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+              {[
+                { label: "Bulls@2026", valid: true },
+                { label: "Trader#99x", valid: true },
+                { label: "password123", valid: false },
+                { label: "BULLS2026", valid: false },
+                { label: "Short@1", valid: false },
+              ].map(({ label, valid }) => (
+                <span
+                  key={label}
+                  className={`text-[10px] font-black ${valid ? "text-up" : "text-down"}`}
+                >
+                  {valid ? "✓" : "✗"} {label}
+                </span>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -121,7 +161,7 @@ export default function LoginPage() {
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
             <div className="flex items-center gap-2">
-              <span>Sign In to Panel</span>
+              <span> {t("SIGN_IN")}</span>
               <ArrowRight
                 size={18}
                 className="group-hover:translate-x-1 transition-transform"
@@ -134,11 +174,7 @@ export default function LoginPage() {
       {/* 3. Footer / Help */}
       <div className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
         <p className="text-[11px] leading-relaxed text-slate-500 text-center">
-          Security Note: Unauthorized access attempts are logged and reported to
-          the system administrator.
-          <span className="text-brand font-bold ml-1">
-            Bulls Yatirim v2.1.0
-          </span>
+          {t("SECURITY_NOTE")}
         </p>
       </div>
     </div>

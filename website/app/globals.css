@@ -33,7 +33,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-raleway);
+  --font-sans: var(--font-roboto);
 
   --color-brand: var(--brand-primary);
   --color-brand-secondary: var(--brand-secondary);

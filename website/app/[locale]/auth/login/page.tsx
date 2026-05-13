@@ -96,7 +96,7 @@ export default function LoginPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-black tracking-tighter text-fg uppercase italic">
+        <h1 className="text-3xl font-black tracking-tighter text-fg uppercase">
           {showMfa.status ? t("VERIFY_IDENTITY") : t("WELCOME_BACK")}
         </h1>
         <p className="text-sm font-medium text-slate-500 mt-1">
@@ -151,7 +151,7 @@ export default function LoginPage() {
                 name="password"
                 type={showPassword ? "text" : "password"}
                 required
-                placeholder="••••••••"
+                placeholder={t("PASSWORD_PLACEHOLDER")}
                 className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-12 py-3 text-sm font-medium outline-none focus:border-brand dark:border-slate-800 dark:bg-slate-900"
               />
               <button
@@ -162,15 +162,50 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            <p className="text-[11px] text-slate-400 px-1">
-              {t("PASSWORD_HINT")}
-            </p>
             <Link
               href="/auth/register"
               className="text-xs font-bold text-brand"
             >
               {t("DONT_HAVE_ACCOUNT?")}
             </Link>
+            {/* Password Rules */}
+            <div className="mt-1 px-1 space-y-2">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                {t("PASSWORD_RULES_TITLE")}
+              </p>
+              <ul className="space-y-1">
+                {[
+                  { key: "PASSWORD_RULE_LENGTH" },
+                  { key: "PASSWORD_RULE_UPPERCASE" },
+                  { key: "PASSWORD_RULE_NUMBER" },
+                  { key: "PASSWORD_RULE_SPECIAL" },
+                ].map(({ key }) => (
+                  <li
+                    key={key}
+                    className="flex items-center gap-2 text-[11px] font-medium text-slate-400"
+                  >
+                    <div className="w-1 h-1 rounded-full bg-brand shrink-0" />
+                    {t(key)}
+                  </li>
+                ))}
+              </ul>
+              <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                {[
+                  { label: "Bulls@2026", valid: true },
+                  { label: "Trader#99x", valid: true },
+                  { label: "password123", valid: false },
+                  { label: "BULLS2026", valid: false },
+                  { label: "Short@1", valid: false },
+                ].map(({ label, valid }) => (
+                  <span
+                    key={label}
+                    className={`text-[10px] font-black ${valid ? "text-up" : "text-down"}`}
+                  >
+                    {valid ? "✓" : "✗"} {label}
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
 
           <button

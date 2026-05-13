@@ -56,7 +56,7 @@
   "FULL_NAME_PLACEHOLDER": "örn. Ahmet Yılmaz",
   "EMAIL_PLACEHOLDER": "kullanici@bullsyatirim.com",
   "PASSWORD_LABEL": "Şifre",
-  "PASSWORD_PLACEHOLDER": "En az 8 karakter",
+  "PASSWORD_PLACEHOLDER": "Şifreyi Girin",
   "CONFIRM_PASSWORD_LABEL": "Şifreyi Onayla",
   "AGREEMENT_PREFIX": "Bulls Yatırım",
   "TERMS_LINK": "Hizmet Şartlarını",
@@ -433,5 +433,11 @@
   "ERROR_SENDING_OTP": "Doğrulama e-postası gönderilemedi. Lütfen tekrar deneyin.",
   "INVALID_OTP": "Geçersiz veya süresi dolmuş kod. Lütfen tekrar deneyin.",
   "PASSWORDS_DO_NOT_MATCH": "Şifreler eşleşmiyor",
-  "REGISTERATION_FAILED": "Kayıt Başarısız"
+  "REGISTERATION_FAILED": "Kayıt Başarısız",
+  "PASSWORD_RULES_TITLE": "Şifre şunları içermelidir",
+  "PASSWORD_RULE_LENGTH": "En az 8 karakter",
+  "PASSWORD_RULE_LOWERCASE": "En az bir küçük harf",
+  "PASSWORD_RULE_UPPERCASE": "En az bir büyük harf",
+  "PASSWORD_RULE_NUMBER": "En az bir rakam",
+  "PASSWORD_RULE_SPECIAL": "En az bir özel karakter (@$!%*#?&^_-)"
 }

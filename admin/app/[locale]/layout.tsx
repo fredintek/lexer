@@ -1,6 +1,6 @@
 import "./../globals.css";
 import type { Metadata } from "next";
-import { Raleway } from "next/font/google";
+import { Roboto } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
@@ -8,8 +8,8 @@ import { setRequestLocale } from "next-intl/server";
 import StoreProvider from "@/components/StoreProvider";
 import { Toaster } from "react-hot-toast";
 
-const raleway = Raleway({
-  variable: "--font-raleway",
+const roboto = Roboto({
+  variable: "--font-roboto",
   subsets: ["latin"],
 });
 
@@ -41,9 +41,9 @@ export default async function RootLayout({ children, params }: Props) {
     <html
       data-scroll-behavior="smooth"
       lang={locale}
-      className={`${raleway.variable} h-full antialiased`}
+      className={`${roboto.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body suppressHydrationWarning className="min-h-full flex flex-col">
         <StoreProvider>
           <NextIntlClientProvider>
             {children} <Toaster />

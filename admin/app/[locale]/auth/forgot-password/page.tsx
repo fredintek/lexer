@@ -53,11 +53,10 @@ export default function ForgotPasswordPage() {
         </div>
         <div className="space-y-2">
           <h1 className="text-2xl font-black tracking-tighter text-fg uppercase">
-            Check your email
+            {t("FORGOT_CHECK_EMAIL_TITLE")}
           </h1>
           <p className="text-sm text-slate-500 font-medium">
-            We have sent a password reset link to your email address. Please
-            follow the instructions to reset your password.
+            {t("FORGOT_CHECK_EMAIL_DESC")}
           </p>
         </div>
         <Link
@@ -80,13 +79,13 @@ export default function ForgotPasswordPage() {
           className="inline-flex items-center gap-2 text-xs font-bold text-brand uppercase tracking-widest hover:gap-3 transition-all"
         >
           <ArrowLeft size={14} />
-          Back to Login
+          {t("BACK_TO_LOGIN")}
         </Link>
         <h1 className="text-3xl font-black tracking-tighter text-fg uppercase mt-2">
-          Forgot Password?
+          {t("FORGOT_PASSWORD_TITLE")}
         </h1>
         <p className="text-sm font-medium text-slate-500">
-          Enter your email and we'll send you a link to reset your admin access.
+          {t("FORGOT_PASSWORD_DESC")}
         </p>
       </div>
 
@@ -94,7 +93,7 @@ export default function ForgotPasswordPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
-            Admin Email
+            {t("ADMIN_EMAIL")}
           </label>
           <div className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
@@ -104,7 +103,7 @@ export default function ForgotPasswordPage() {
               type="email"
               name="email"
               required
-              placeholder="e.g. support@bullsyatirim.com"
+              placeholder={t("ADMIN_EMAIL_PLACEHOLDER")}
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
           </div>
@@ -119,7 +118,7 @@ export default function ForgotPasswordPage() {
             <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
             <div className="flex items-center gap-2">
-              <span>Send Reset Instructions</span>
+              <span>{t("SEND_RESET_INSTRUCTIONS")}</span>
               <Send
                 size={18}
                 className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"

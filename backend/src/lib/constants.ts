@@ -3,9 +3,10 @@ export const AUTH_TYPE_KEY = 'authType';
 export const PERMISSIONS_KEY = 'permissions';
 export const USER_STATUS_KEY = 'userStatus';
 export const REFRESH_TOKEN_ALIAS = 'refreshToken';
-export const PASSWORD_REGEX = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+export const PASSWORD_REGEX =
+  /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&^_\-])[A-Za-z\d@$!%*#?&^_\-]{8,}$/;
 export const PASSWORD_REGEX_MESSAGE =
-  'Minimum eight characters, at least one letter and one number';
+  'Password must be at least 8 characters and include an uppercase letter, a number, and a special character (@$!%*#?&^_-)';
 export enum AuthType {
   None,
   Bearer,
