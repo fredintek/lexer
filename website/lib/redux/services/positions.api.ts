@@ -40,6 +40,11 @@ export const positionApi = apiReducer.injectEndpoints({
       }),
       invalidatesTags: ["POSITIONS", "Positions"],
     }),
+
+    getTransactionHistory: builder.query<any, void>({
+      query: () => "/positions/transaction-history",
+      providesTags: ["Positions", "POSITIONS"],
+    }),
   }),
 });
 
@@ -48,4 +53,5 @@ export const {
   useGetMyAssetsQuery,
   useCancelPositionMutation,
   useSellPositionMutation,
+  useGetTransactionHistoryQuery,
 } = positionApi;

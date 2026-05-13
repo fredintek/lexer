@@ -1,37 +1,35 @@
-import DataTable, { Column } from "@/components/dataTable/DataTable";
+"use client";
+
 import { formatCurrency, formatDate, getLogoUrl } from "@/lib/helpers";
-import { tradeApi, useGetPositionsQuery } from "@/lib/redux/services/trade.api";
-import { useAppDispatch } from "@/lib/redux/store";
-import {
-  ArrowDown,
-  ArrowDownRight,
-  ArrowUp,
-  ArrowUpRight,
-  Banknote,
-  Briefcase,
-  LayoutGrid,
-  Loader,
-  Wallet,
-} from "lucide-react";
-import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
-import { io } from "socket.io-client";
-import SellModal from "./SellModal";
 import {
   positionApi,
   useCancelPositionMutation,
   useGetMyAssetsQuery,
 } from "@/lib/redux/services/positions.api";
+import { useAppDispatch } from "@/lib/redux/store";
+import {
+  ArrowDownRight,
+  ArrowUpRight,
+  Banknote,
+  Briefcase,
+  Loader,
+  Wallet,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import DataTable, { Column } from "../dataTable/DataTable";
+import { io } from "socket.io-client";
+import SellModal from "@/app/[locale]/(home)/profile/_ui/SellModal";
 
-export default function AssetsSection() {
+type Props = {};
+
+const DesktopPositions = (props: Props) => {
   const t = useTranslations();
   const dispatch = useAppDispatch();
 
-  // 1. Fetch the new aggregated API data
   const { data: myAssets, isLoading: isMyAssetsLoading } =
     useGetMyAssetsQuery(undefined);
-
   const [activeTab, setActiveTab] = useState<
     "open" | "waiting" | "closed" | "cancelled"
   >("open");
@@ -263,7 +261,7 @@ export default function AssetsSection() {
   }, [activeTab, t]);
 
   return (
-    <div className="space-y-6">
+    <div className="hidden md:block space-y-6 p-8">
       {/* 4. METRIC CARDS SECTION */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <MetricCard
@@ -322,7 +320,9 @@ export default function AssetsSection() {
       />
     </div>
   );
-}
+};
+
+export default DesktopPositions;
 
 interface MetricCardProps {
   title: string;

@@ -47,13 +47,14 @@ const DepositModal = ({ isOpen, onClose }: DepositModalProps) => {
 
       toast.success(t("DEPOSIT_SUCCESS"));
 
-      onClose();
       setStep(1);
       setAmount("");
       setFile(undefined);
     } catch (err: any) {
       console.error("Deposit failed:", err);
       toast.error(err?.data?.message || t("DEPOSIT_FAILED"));
+    } finally {
+      onClose();
     }
   };
 

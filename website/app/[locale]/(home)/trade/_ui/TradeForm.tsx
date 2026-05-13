@@ -131,7 +131,7 @@ const TradeForm = ({
         t("PURCHASE_SUCCESS", { lot: lot, symbol: selectedSymbol.symbol }),
       );
       setLot(1);
-      router.push("/profile?tab=assets");
+      router.push("/positions");
     } catch (err: any) {
       toast.error(err?.data?.message || t("TRADE_FAILED"));
     }

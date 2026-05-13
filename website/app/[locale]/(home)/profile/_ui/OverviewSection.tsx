@@ -32,7 +32,7 @@ export default function OverviewSection({
   setActiveTab,
 }: {
   user: Record<string, any> | null;
-  setActiveTab: React.Dispatch<React.SetStateAction<string>>;
+  setActiveTab?: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const t = useTranslations();
   const [form] = Form.useForm();
@@ -59,26 +59,6 @@ export default function OverviewSection({
 
   const { data: myStat, isLoading: myStatIsLoading } =
     useGetMyStatsQuery(undefined);
-
-  const getIcon = (type: ActivityType) => {
-    const iconClass = "text-brand";
-    switch (type) {
-      case "LOGIN":
-        return <Clock size={16} className={iconClass} />;
-      case "WITHDRAWAL":
-        return <ArrowUpRight size={16} className={iconClass} />;
-      case "SECURITY":
-        return <Shield size={16} className={iconClass} />;
-      case "TRADE":
-        return <Ticket size={16} className={iconClass} />;
-      case "PROFILE":
-        return <UserPen size={16} className={iconClass} />;
-      case "TRANSACTION":
-        return <ArrowLeftRight size={16} className={iconClass} />;
-      default:
-        return <Zap size={16} />;
-    }
-  };
 
   useEffect(() => {
     if (updateAvatarSuccess) {
@@ -288,7 +268,7 @@ export default function OverviewSection({
           )}
         </div>
 
-        <div className="bg-slate-900 text-white p-8 rounded-4xl flex flex-col justify-between">
+        <div className="hidden bg-slate-900 text-white p-8 rounded-4xl md:flex flex-col justify-between">
           <div className="space-y-4">
             <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-400">
               {t("SECURITY_STATUS")}
@@ -301,7 +281,7 @@ export default function OverviewSection({
             </div>
           </div>
           <button
-            onClick={() => setActiveTab("security")}
+            onClick={() => setActiveTab!("security")}
             className="cursor-pointer mt-8 group flex items-center justify-between w-full text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-white transition-colors"
           >
             {t("MANAGE_SECURITY")}{" "}
@@ -310,24 +290,6 @@ export default function OverviewSection({
               className="group-hover:translate-x-1 transition-transform"
             />
           </button>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="space-y-4">
-        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 ml-4">
-          {t("RECENT_ACTIVITY")}
-        </h3>
-        <div className="bg-bg border border-slate-200 dark:border-slate-800 rounded-4xl overflow-hidden">
-          {activities?.map((activity: any) => (
-            <ActivityRow
-              key={activity.id}
-              type={activity.type}
-              detail={activity.description}
-              time={formatDate(activity.createdAt)}
-              icon={getIcon(activity.type)}
-            />
-          ))}
         </div>
       </div>
     </div>

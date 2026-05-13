@@ -99,7 +99,7 @@ const LiveSidebar = ({ setIsSidebarOpen }: Props) => {
     return () => {
       socket.disconnect();
     };
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className="w-80 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-gray-950 ">

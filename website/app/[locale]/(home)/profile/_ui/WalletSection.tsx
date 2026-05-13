@@ -1,5 +1,5 @@
 "use client";
-import DepositModal from "@/app/[locale]/(trade)/trade/_ui/DepositModal";
+import DepositModal from "@/app/[locale]/(home)/trade/_ui/DepositModal";
 import DataTable, { Column } from "@/components/dataTable/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import { formatCurrency } from "@/lib/helpers";

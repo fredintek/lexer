@@ -436,4 +436,23 @@ export class PositionsService {
 
     return await this.positionRepository.save(position);
   }
+
+  public async getTransactionHistory(userId: string) {
+    const positions = await this.positionRepository.find({
+      where: { user: { id: userId } },
+      order: { openingDate: 'DESC' },
+    });
+
+    return positions.map((p) => ({
+      id: p.id,
+      website: p.website,
+      symbol: p.symbol,
+      quantity: Number(p.lots),
+      unitPrice: Number(p.averageEntryPrice),
+      executionPrice: Number(p.startingPrice) * Number(p.lots),
+      side: p.type === 'BUYING' ? 'BUY' : 'SELL',
+      status: p.status,
+      date: p.openingDate,
+    }));
+  }
 }

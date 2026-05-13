@@ -105,7 +105,7 @@ const Navbar = (props: Props) => {
   };
 
   return (
-    <nav className="relative bg-bg text-fg font-sans border-b border-gray-200 dark:border-gray-800 transition-colors duration-300 z-50">
+    <nav className="hidden md:block relative bg-bg text-fg font-sans border-b border-gray-200 dark:border-gray-800 transition-colors duration-300 z-50">
       <div className="flex items-center justify-between px-4 md:px-6 py-3">
         {/* LEFT SECTION: Logo & Desktop Links */}
         <div className="flex items-center space-x-8">

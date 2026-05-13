@@ -11,7 +11,7 @@ export enum PositionStatus {
   WAITING = 'waiting', // Order placed during off-days
   OPEN = 'open', // Active trade
   CLOSED = 'closed', // Trade finalized
-  CANCELLED = 'cancellCANCELLED', // Cancel waiting positions
+  CANCELLED = 'cancelled', // Cancel waiting positions
 }
 
 @Entity()

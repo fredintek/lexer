@@ -16,7 +16,6 @@ import {
 import TradingNews from "./TradingNews";
 import LiveSidebar from "./LiveSidebar";
 import DepositModal from "./DepositModal";
-import { selectCurrentUser } from "@/lib/redux/features/auth.slice";
 import TradeTabs from "./TradeTabs";
 import { io } from "socket.io-client";
 import { useTranslations } from "next-intl";
@@ -95,7 +94,7 @@ const TradeSection = () => {
   }, [activeSymbol, dispatch]);
 
   return (
-    <div className="flex flex-col bg-bg text-fg h-[calc(100vh-64px)] overflow-hidden">
+    <div className="hidden md:flex flex-col bg-bg text-fg h-[calc(100vh-64px)] overflow-hidden">
       {/* 1. TICKER BAR */}
       <div className="h-16 border-b border-gray-200 dark:border-gray-800 flex items-center px-4 space-x-8 overflow-x-auto no-scrollbar shrink-0">
         <div className="flex items-center space-x-2 min-w-fit">

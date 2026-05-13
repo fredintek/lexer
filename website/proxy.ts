@@ -1,4 +1,3 @@
-// middleware.ts
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
@@ -33,9 +32,9 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // 4. Logic: If trying to access /login with a token -> Redirect to Trade
+  // 4. Logic: If trying to access /login with a token -> Redirect to home
   if (isAuthRoute && token) {
-    const profileUrl = new URL("/trade", request.url);
+    const profileUrl = new URL("/", request.url);
     return NextResponse.redirect(profileUrl);
   }
 

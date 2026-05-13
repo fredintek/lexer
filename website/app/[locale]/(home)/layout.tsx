@@ -1,19 +1,17 @@
-import Footer from "@/components/footer/Footer";
+import BottomNavbar from "@/components/navbar/BottomNavbar";
 import Navbar from "@/components/navbar/Navbar";
 import React from "react";
 
-interface Props {
+export default function HomeLayout({
+  children,
+}: {
   children: React.ReactNode;
-}
-
-const HomeLayout = ({ children }: Props) => {
+}) {
   return (
-    <>
+    <div>
       <Navbar />
-      <main className="pt-20 lg:pt-24 min-h-screen">{children}</main>
-      {/* <Footer /> */}
-    </>
+      <main className="mt-17 pb-5">{children}</main>
+      <BottomNavbar />
+    </div>
   );
-};
-
-export default HomeLayout;
+}

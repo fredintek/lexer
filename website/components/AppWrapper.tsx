@@ -9,7 +9,7 @@ type Props = { children: React.ReactNode };
 const AppWrapper = ({ children }: Props) => {
   const currentUser = useAppSelector(selectCurrentUser);
   const { onlineCount } = useOnlineUsers(currentUser?.user?.id as string);
-  return <>{children}</>;
+  return <>{children} </>;
 };
 
 export default AppWrapper;

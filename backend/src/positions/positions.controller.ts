@@ -21,6 +21,11 @@ export class PositionsController {
     return this.positionsService.getAllPositions();
   }
 
+  @Get('transaction-history')
+  async getTransactionHistory(@ActiveUser() currentUser: ActiveUserInterface) {
+    return this.positionsService.getTransactionHistory(currentUser?.userId);
+  }
+
   @Post('buy')
   async buyStock(
     @ActiveUser() user: ActiveUserInterface,
