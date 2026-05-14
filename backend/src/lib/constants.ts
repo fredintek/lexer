@@ -21,7 +21,28 @@ export const AVATAR_FOLDER = 'lexer-trader/avatars';
 export const DEPOSIT_FOLDER = 'lexer-trader/deposits';
 export const BANNER_FOLDER = 'lexer-trader/banners';
 export const KYC_FOLDER = 'lexer-trader/kyc';
-
+export const KYC_FILE_OPTIONS = {
+  front: {
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+    ],
+    maxSizeBytes: 5 * 1024 * 1024,
+    required: true,
+  },
+  back: {
+    allowedMimeTypes: [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'application/pdf',
+    ],
+    maxSizeBytes: 5 * 1024 * 1024,
+    required: true,
+  },
+};
 export const TURKISH_STOCKS = [
   'A1CAP.IS',
   'A1YEN.IS',

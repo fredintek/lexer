@@ -744,6 +744,7 @@ export default function SecuritySection({
                       t("REQ_CLEAR_TEXT"),
                       t("REQ_NO_GLARE"),
                       t("REQ_EXPIRY_DATE"),
+                      t("KYC_FILES_CONSTRAINT"),
                     ].map((req, i) => (
                       <li
                         key={i}

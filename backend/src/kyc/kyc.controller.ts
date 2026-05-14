@@ -13,11 +13,18 @@ import {
 import { KycService } from './providers/kyc.service';
 import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
 import { PERMISSIONS } from 'src/lib/permissions';
-import { CreateKycDto, GetKycQueryDto, UpdateKYCStatusDto } from './dtos';
+import {
+  CreateKycDto,
+  GetKycQueryDto,
+  KYCStatus,
+  UpdateKYCStatusDto,
+} from './dtos';
 import { ActiveUserInterface } from 'src/lib/types';
 import { ActiveUser } from 'src/auth/decorators/activeUser.decorator';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
+import { FileValidationPipe } from './pipes/fileValidation.pipe';
+import { KYC_FILE_OPTIONS } from 'src/lib/constants';
 
 @Controller('kyc')
 export class KycController {
@@ -59,7 +66,7 @@ export class KycController {
   async uploadDocuments(
     @ActiveUser() currentUser: ActiveUserInterface,
     @Body() createKycDto: CreateKycDto,
-    @UploadedFiles()
+    @UploadedFiles(new FileValidationPipe(KYC_FILE_OPTIONS))
     files: { front?: Express.Multer.File[]; back?: Express.Multer.File[] },
   ) {
     if (!files.front || !files.back) {
@@ -71,6 +78,19 @@ export class KycController {
       createKycDto,
       files.front[0],
       files.back[0],
+    );
+  }
+
+  @Patch('approve/:userId')
+  @Permissions(PERMISSIONS.CAN_MANAGE_KYC)
+  async approveKyc(
+    @Param('userId') userId: string,
+    @ActiveUser() currentUser: ActiveUserInterface,
+  ) {
+    return await this.kycService.updateStatus(
+      '1',
+      { status: KYCStatus.APPROVED, adminPass: true, userId },
+      currentUser?.userId,
     );
   }
 }

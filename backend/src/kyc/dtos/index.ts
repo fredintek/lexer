@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsLowercase,
@@ -26,6 +27,14 @@ export class UpdateKYCStatusDto {
   @IsString()
   @IsNotEmpty()
   adminId?: string;
+
+  @IsString()
+  @IsOptional()
+  userId?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  adminPass?: boolean;
 }
 
 export class CreateKycDto {

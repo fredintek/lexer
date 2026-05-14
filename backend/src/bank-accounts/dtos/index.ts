@@ -1,5 +1,10 @@
-// dto/create-bank-account.dto.ts
-import { IsEnum, IsString, IsNotEmpty, IsOptional, IsBoolean } from 'class-validator';
+import {
+  IsEnum,
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsBoolean,
+} from 'class-validator';
 import { AccountType } from '../entities/bank-accounts.entity';
 import { PartialType } from '@nestjs/mapped-types';
 

@@ -502,5 +502,6 @@
   "SUSPENDED": "Suspended",
   "DEPOSITED_TO": "Deposit To",
   "BUY_OPEN": "Buy Open",
-  "SELL_PARTIAL": "Partial Sell"
+  "SELL_PARTIAL": "Partial Sell",
+  "KYC_FILES_CONSTRAINT": "Each file upload should not be more than 5mb"
 }

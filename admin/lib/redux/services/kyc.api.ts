@@ -1,6 +1,7 @@
 import { lexerApi } from ".";
 
 export const kycApi = lexerApi.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getKYCRequests: builder.query<
       any[],
@@ -30,7 +31,18 @@ export const kycApi = lexerApi.injectEndpoints({
       }),
       invalidatesTags: ["KYC", "User"],
     }),
+    adminUpdateKyc: builder.mutation({
+      query: (id: string) => ({
+        url: `kyc/approve/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["KYC", "User"],
+    }),
   }),
 });
 
-export const { useGetKYCRequestsQuery, useUpdateKYCStatusMutation } = kycApi;
+export const {
+  useAdminUpdateKycMutation,
+  useGetKYCRequestsQuery,
+  useUpdateKYCStatusMutation,
+} = kycApi;

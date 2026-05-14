@@ -502,5 +502,6 @@
   "DEPOSITED_TO": "Yatırılacak Kişi",
   "BUY_OPEN": "Açık Alım",
   "SELL_PARTIAL": "Kısmi Satış",
-  "WITHDRAWAL": "Çekilme"
+  "WITHDRAWAL": "Çekilme",
+  "KYC_FILES_CONSTRAINT": "Her dosya yüklemesi 5 MB'ı geçmemelidir."
 }

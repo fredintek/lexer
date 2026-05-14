@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  HttpException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,7 +12,7 @@ import {
 } from '../dtos';
 import { ActiveUserInterface } from 'src/lib/types';
 import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
-import { AVATAR_FOLDER, KYC_FOLDER } from 'src/lib/constants';
+import { KYC_FOLDER } from 'src/lib/constants';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Kyc } from '../entities/kyc.entity';
 import {
@@ -142,48 +143,65 @@ export class KycService {
   }
 
   public async updateStatus(
-    id: string,
+    id: string | undefined,
     dto: UpdateKYCStatusDto,
     adminId: string,
   ) {
-    // 1. Check if the request exists
-    const kyc = await this.kycRepository.findOne({
-      where: { id },
-      relations: ['user'],
-    });
-
-    if (!kyc) {
-      throw new NotFoundException(`KYC Request with ID ${id} not found`);
-    }
-
-    // 2. Prevent re-processing already active KYC
-    if (
-      kyc.status === KYCStatus.APPROVED &&
-      dto.status === KYCStatus.APPROVED
-    ) {
-      throw new BadRequestException('This KYC is already active');
-    }
-
-    // 3. Start Transaction
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
     try {
-      // Update KYC Record
+      // 1. Try to find the KYC record within the transaction
+      let kyc = await queryRunner.manager.findOne(Kyc, {
+        where: { id },
+        relations: ['user'],
+      });
+
+      // 2. Handle Admin Bypass (Creation)
+      if (!kyc) {
+        if (dto.adminPass && dto.userId) {
+          const user = await queryRunner.manager.findOne(User, {
+            where: { id: dto.userId },
+          });
+
+          if (!user) {
+            throw new NotFoundException(
+              'User not found for manual KYC creation',
+            );
+          }
+
+          // Initialize the instance (but don't save yet)
+          kyc = queryRunner.manager.create(Kyc, {
+            user: user,
+            documentType: 'id-card', // Placeholder
+            country: 'System-Admin-Approved', // Placeholder
+            status: KYCStatus.PENDING, // Will be updated to APPROVED below
+          });
+        } else {
+          throw new NotFoundException(`KYC Request with ID ${id} not found`);
+        }
+      }
+
+      // 3. Logic Guard: Prevent redundant approvals
+      if (
+        kyc.status === KYCStatus.APPROVED &&
+        dto.status === KYCStatus.APPROVED
+      ) {
+        throw new BadRequestException('This KYC is already active');
+      }
+
+      // 4. Update KYC Entity Fields
       kyc.status = dto.status;
       kyc.reviewedById = adminId;
       kyc.reviewedAt = new Date();
+      kyc.rejectionReason =
+        dto.status === KYCStatus.REJECTED ? dto.rejectionReason : undefined;
 
-      if (dto.status === KYCStatus.REJECTED) {
-        kyc.rejectionReason = dto.rejectionReason;
-      } else {
-        kyc.rejectionReason = undefined;
-      }
+      // 5. Save KYC (This handles both Create and Update)
+      const savedKyc = await queryRunner.manager.save(kyc);
 
-      await queryRunner.manager.save(kyc);
-
-      // 4. Upgrade User Tier if Approved
+      // 6. Upgrade User Tier if Approved
       if (dto.status === KYCStatus.APPROVED) {
         await queryRunner.manager.update(User, kyc.user.id, {
           tier: 2,
@@ -191,15 +209,24 @@ export class KycService {
       }
 
       await queryRunner.commitTransaction();
+
+      // 7. Return the fresh record with relations
       return await this.kycRepository.findOne({
-        where: { id },
+        where: { id: savedKyc.id },
         relations: ['user', 'reviewedBy'],
       });
-    } catch (err) {
-      // Rollback if anything goes wrong
+    } catch (err: any) {
+      // Rollback everything if any step fails
       await queryRunner.rollbackTransaction();
-      throw new BadRequestException('Failed to update KYC status');
+
+      // Pass through specific exceptions (like NotFound or BadRequest)
+      if (err instanceof HttpException) throw err;
+
+      throw new BadRequestException(
+        'Failed to update KYC status: ' + err.message,
+      );
     } finally {
+      // Crucial: always release the runner
       await queryRunner.release();
     }
   }

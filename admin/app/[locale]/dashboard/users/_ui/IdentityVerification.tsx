@@ -7,12 +7,16 @@ import {
   FileText,
   UserCheck,
   AlertCircle,
+  Loader,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useGetUserDetailsQuery } from "@/lib/redux/services/user.api";
 import StatusBadge from "@/components/StatusBadge";
 import toast from "react-hot-toast";
-import { useUpdateKYCStatusMutation } from "@/lib/redux/services/kyc.api";
+import {
+  useAdminUpdateKycMutation,
+  useUpdateKYCStatusMutation,
+} from "@/lib/redux/services/kyc.api";
 import { useAppSelector } from "@/lib/redux/store";
 import { selectCurrentUser } from "@/lib/redux/features/auth.slice";
 
@@ -25,6 +29,8 @@ export default function IdentityVerification({ userId }: Props) {
   const t = useTranslations();
   const { data: user, isLoading } = useGetUserDetailsQuery(userId as string);
   const [updateKyc, { isLoading: isUpdating }] = useUpdateKYCStatusMutation();
+  const [adminUpdateKyc, { isLoading: isAdminUpdateKyc }] =
+    useAdminUpdateKycMutation();
 
   const [selectedImg, setSelectedImg] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState("");
@@ -52,6 +58,15 @@ export default function IdentityVerification({ userId }: Props) {
     }
   };
 
+  const handleAdminUpdateKyc = async (status: string) => {
+    try {
+      await adminUpdateKyc(userId).unwrap();
+      toast.success(t("KYC_UPDATED_SUCCESSFULLY"));
+    } catch (error) {
+      toast.error(t("UPDATE_FAILED"));
+    }
+  };
+
   if (isLoading)
     return (
       <div className="p-10 animate-pulse text-center">{t("LOADING")}...</div>
@@ -69,6 +84,17 @@ export default function IdentityVerification({ userId }: Props) {
             {t("USER_HAS_NOT_UPLOADED_DOCUMENTS")}
           </p>
         </div>
+        <button
+          onClick={() => handleAdminUpdateKyc("APPROVE")}
+          disabled={isAdminUpdateKyc}
+          className={`w-fit disabled:opacity-70 py-2 px-5 rounded-xl flex items-center justify-center text-sm font-black uppercase tracking-widest transition-all active:scale-[0.98] cursor-pointer bg-brand text-white`}
+        >
+          {isAdminUpdateKyc ? (
+            <Loader size={18} className="animate-spin" />
+          ) : (
+            <p>{t("APPROVE")}</p>
+          )}
+        </button>
       </div>
     );
   }
