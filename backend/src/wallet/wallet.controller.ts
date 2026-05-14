@@ -15,12 +15,12 @@ import { ActiveUserInterface } from 'src/lib/types';
 import { CreateDepositDto, WithdrawRequestDto } from './dtos';
 import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { PERMISSIONS } from 'src/lib/permissions';
+import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
 import {
   TransactionStatus,
   TransactionType,
-} from './entities/transaction.entity';
-import { PERMISSIONS } from 'src/lib/permissions';
-import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
+} from 'src/transactions/entities/transactions.entity';
 
 @Controller('wallet')
 export class WalletController {

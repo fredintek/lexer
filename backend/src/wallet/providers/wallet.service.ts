@@ -4,11 +4,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Transaction,
-  TransactionStatus,
-  TransactionType,
-} from '../entities/transaction.entity';
 import { User } from 'src/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { ActiveUserInterface } from 'src/lib/types';
@@ -20,13 +15,17 @@ import {
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 import { DEPOSIT_FOLDER } from 'src/lib/constants';
-import { addBusinessDays } from 'src/lib/helpers';
+import {
+  Transactions,
+  TransactionStatus,
+  TransactionType,
+} from 'src/transactions/entities/transactions.entity';
 
 @Injectable()
 export class WalletService {
   constructor(
-    @InjectRepository(Transaction)
-    private readonly txRepo: Repository<Transaction>,
+    @InjectRepository(Transactions)
+    private readonly txRepo: Repository<Transactions>,
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly eventEmitter: EventEmitter2,
     private readonly dataSource: DataSource,
@@ -42,94 +41,13 @@ export class WalletService {
       user: { id: currentUser?.userId },
     };
 
-    if (type) {
-      where.type = type;
-    }
-
-    if (status) {
-      where.status = status;
-    }
+    if (type) where.type = type;
+    if (status) where.status = status;
 
     return this.txRepo.find({
       where,
-      relations: ['paymentMethod', 'bankAccount'],
+      relations: ['position'],
       order: { createdAt: 'DESC' },
-    });
-  }
-
-  public async createDepositTransaction(
-    activeUser: ActiveUserInterface,
-    createDepositDto: CreateDepositDto,
-    file?: Express.Multer.File,
-  ) {
-    let receipt: any;
-    if (file) {
-      const uploadResult = await this.cloudinaryService.uploadImage(
-        file,
-        DEPOSIT_FOLDER,
-      );
-
-      receipt = {
-        publicId: uploadResult.public_id,
-        url: uploadResult.secure_url,
-      };
-    }
-
-    const transaction = this.txRepo.create({
-      amount: Number(createDepositDto.amount),
-      type: TransactionType.DEPOSIT,
-      status: TransactionStatus.PENDING,
-      user: { id: activeUser?.userId },
-      bankAccount: { id: createDepositDto.bankAccountId },
-      receipt,
-    });
-
-    return await this.txRepo.save(transaction);
-  }
-
-  public async requestWithdrawal(
-    currentUser: ActiveUserInterface,
-    withdrawRequestDto: WithdrawRequestDto,
-  ) {
-    return await this.userRepo.manager.transaction(async (manager) => {
-      // 1. Find user with a 'pessimistic_write' lock to prevent double-spending
-      const user = await manager.findOne(User, {
-        where: { id: currentUser.userId },
-        lock: { mode: 'pessimistic_write' },
-      });
-
-      if (!user) throw new NotFoundException('User not found');
-
-      // 2. Validate balance
-      if (Number(user.balance) < withdrawRequestDto?.amount) {
-        throw new BadRequestException('Insufficient balance');
-      }
-
-      // 3. Create the pending transaction record
-      const transaction = manager.create(Transaction, {
-        amount: withdrawRequestDto?.amount,
-        type: TransactionType.WITHDRAWAL,
-        status: TransactionStatus.PENDING,
-        user: { id: currentUser.userId },
-        paymentMethod: { id: withdrawRequestDto?.paymentMethodId },
-        expectedSettlementDate: addBusinessDays(new Date(), 2),
-      });
-
-      // 4. Move funds from balance to frozenBalance
-      // We use math directly on the decimal to avoid JS floating point errors
-      user.balance = Number(user.balance) - withdrawRequestDto?.amount;
-      user.frozenBalance =
-        Number(user.frozenBalance || 0) + withdrawRequestDto?.amount;
-
-      await manager.save(User, user);
-
-      // Emit the event (This is non-blocking!)
-      this.eventEmitter.emit('user.activity', {
-        userId: user.id,
-        type: 'TRANSACTION',
-        description: 'Withdrawal requested',
-      });
-      return await manager.save(Transaction, transaction);
     });
   }
 
@@ -137,7 +55,7 @@ export class WalletService {
     const stats = await this.txRepo
       .createQueryBuilder('transaction')
       .select('COUNT(transaction.id)', 'count')
-      .addSelect('SUM(transaction.amount)', 'totalAmount')
+      .addSelect('SUM(transaction.marginAmount)', 'totalAmount') // ← fixed
       .where('transaction.type = :type', { type })
       .andWhere('transaction.status = :status', {
         status: TransactionStatus.PENDING,
@@ -159,25 +77,17 @@ export class WalletService {
     const qb = this.txRepo
       .createQueryBuilder('transaction')
       .leftJoinAndSelect('transaction.user', 'user')
-      .leftJoinAndSelect('transaction.paymentMethod', 'paymentMethod')
-      .leftJoinAndSelect('transaction.bankAccount', 'bankAccount');
+      .leftJoinAndSelect('transaction.position', 'position'); // ← only valid relation
 
-    // 1. Handle Type filtering (made optional if you want to see all TX for a user)
     if (query.type) {
       qb.andWhere('transaction.type = :type', { type: query.type });
     }
-
-    // 2. Filter by userId specifically
     if (query.userId) {
       qb.andWhere('user.id = :userId', { userId: query.userId });
     }
-
-    // 3. Handle Status filtering
     if (query.status) {
       qb.andWhere('transaction.status = :status', { status: query.status });
     }
-
-    // 4. Handle Search (Global search across name/email)
     if (query.search) {
       qb.andWhere('(user.fullname LIKE :search OR user.email LIKE :search)', {
         search: `%${query.search}%`,
@@ -185,35 +95,6 @@ export class WalletService {
     }
 
     return qb.orderBy('transaction.createdAt', 'DESC').getMany();
-  }
-
-  public async updateStatus(id: string, dto: UpdateTransactionStatusDto) {
-    return await this.dataSource.transaction(async (manager) => {
-      const tx = await manager.findOne(Transaction, {
-        where: { id },
-        relations: ['user'],
-      });
-
-      if (!tx) throw new NotFoundException('Transaction not found');
-      if (tx.status !== TransactionStatus.PENDING)
-        throw new BadRequestException('Transaction already processed');
-
-      tx.status = dto.status;
-      tx.adminNote = dto.adminNote as string;
-
-      const user = tx.user;
-      if (dto.status === TransactionStatus.APPROVED) {
-        // Deduction from frozen balance
-        user.frozenBalance -= tx.amount;
-      } else if (dto.status === TransactionStatus.REJECTED) {
-        // Return to active balance
-        user.frozenBalance -= tx.amount;
-        user.balance += tx.amount;
-      }
-
-      await manager.save(user);
-      return await manager.save(tx);
-    });
   }
 
   public async getChartStats() {
@@ -224,17 +105,15 @@ export class WalletService {
       .createQueryBuilder('t')
       .select("DATE_FORMAT(t.createdAt, '%a')", 'day')
       .addSelect(
-        `SUM(CASE WHEN t.type = '${TransactionType.DEPOSIT}' AND t.status = '${TransactionStatus.APPROVED}' THEN t.amount ELSE 0 END)`,
+        `SUM(CASE WHEN t.type = '${TransactionType.DEPOSIT}' AND t.status = '${TransactionStatus.APPROVED}' THEN t.marginAmount ELSE 0 END)`,
         'deposit',
       )
       .addSelect(
-        `SUM(CASE WHEN t.type = '${TransactionType.WITHDRAWAL}' AND t.status = '${TransactionStatus.APPROVED}' THEN t.amount ELSE 0 END)`,
+        `SUM(CASE WHEN t.type = '${TransactionType.WITHDRAWAL}' AND t.status = '${TransactionStatus.APPROVED}' THEN t.marginAmount ELSE 0 END)`,
         'withdrawal',
       )
       .where('t.createdAt >= :startDate', { startDate })
-      // Group by the formatted day name
       .groupBy("DATE_FORMAT(t.createdAt, '%a')")
-      // Also group and order by the actual Date to keep the 7-day sequence correct
       .addGroupBy('DATE(t.createdAt)')
       .orderBy('DATE(t.createdAt)', 'ASC')
       .getRawMany();
@@ -246,10 +125,104 @@ export class WalletService {
     }));
   }
 
+  public async createDepositTransaction(
+    activeUser: ActiveUserInterface,
+    createDepositDto: CreateDepositDto,
+    file?: Express.Multer.File,
+  ) {
+    return await this.dataSource.transaction(async (manager) => {
+      let receiptUrl: string | null = null;
+      if (file) {
+        const uploadResult = await this.cloudinaryService.uploadImage(
+          file,
+          DEPOSIT_FOLDER,
+        );
+        receiptUrl = uploadResult.secure_url;
+      }
+
+      const user = await manager.findOne(User, {
+        where: { id: activeUser.userId },
+      });
+      if (!user) throw new NotFoundException('User not found');
+
+      const tx = manager.create(Transactions, {
+        type: TransactionType.DEPOSIT,
+        status: TransactionStatus.PENDING,
+        symbol: 'CASH',
+        lots: 0,
+        priceAtExecution: 0,
+        marginAmount: Number(createDepositDto.amount),
+        realizedPnL: 0,
+        commission: 0,
+        balanceBefore: Number(user.balance),
+        balanceAfter: Number(user.balance),
+        method: 'bank_transfer',
+        reference: createDepositDto.bankAccountId,
+        notes: receiptUrl
+          ? `Deposit of ₺${createDepositDto.amount}. Receipt: ${receiptUrl}`
+          : `Deposit of ₺${createDepositDto.amount}. Awaiting approval.`,
+        user,
+        position: undefined,
+      });
+
+      return await manager.save(Transactions, tx);
+    });
+  }
+
+  public async requestWithdrawal(
+    currentUser: ActiveUserInterface,
+    withdrawRequestDto: WithdrawRequestDto,
+  ) {
+    return await this.dataSource.transaction(async (manager) => {
+      const user = await manager.findOne(User, {
+        where: { id: currentUser.userId },
+        lock: { mode: 'pessimistic_write' },
+      });
+
+      if (!user) throw new NotFoundException('User not found');
+      if (Number(user.balance) < withdrawRequestDto.amount) {
+        throw new BadRequestException('Insufficient balance');
+      }
+
+      const balanceBefore = Number(user.balance);
+
+      user.balance = balanceBefore - withdrawRequestDto.amount;
+      user.frozenBalance =
+        Number(user.frozenBalance || 0) + withdrawRequestDto.amount;
+      await manager.save(User, user);
+
+      const tx = manager.create(Transactions, {
+        type: TransactionType.WITHDRAWAL,
+        status: TransactionStatus.PENDING,
+        symbol: 'CASH',
+        lots: 0,
+        priceAtExecution: 0,
+        marginAmount: withdrawRequestDto.amount,
+        realizedPnL: 0,
+        commission: 0,
+        balanceBefore,
+        balanceAfter: Number(user.balance),
+        method: withdrawRequestDto.paymentMethodId,
+        notes: `Withdrawal of ₺${withdrawRequestDto.amount}. Funds frozen pending approval.`,
+        user,
+        position: undefined,
+      });
+
+      const savedTx = await manager.save(Transactions, tx);
+
+      this.eventEmitter.emit('user.activity', {
+        userId: user.id,
+        type: 'TRANSACTION',
+        description: 'Withdrawal requested',
+      });
+
+      return savedTx;
+    });
+  }
+
   public async approveTransaction(transactionId: string) {
     return await this.txRepo.manager.transaction(async (manager) => {
-      // 1. Fetch transaction with user details
-      const trx = await manager.findOne(Transaction, {
+      const trx = await manager.findOne(Transactions, {
         where: { id: transactionId },
         relations: ['user'],
       });
@@ -261,48 +234,42 @@ export class WalletService {
       }
 
       const user = trx.user;
+      const balanceBefore = Number(user.balance);
 
       if (trx.type === TransactionType.DEPOSIT) {
-        /**
-         * DEPOSIT LOGIC
-         * Simply add the amount to the user's main balance.
-         */
-        await manager.increment(User, { id: user.id }, 'balance', trx.amount);
+        await manager.increment(
+          User,
+          { id: user.id },
+          'balance',
+          trx.marginAmount,
+        );
+        trx.balanceAfter = balanceBefore + Number(trx.marginAmount);
       } else if (trx.type === TransactionType.WITHDRAWAL) {
-        /**
-         * WITHDRAWAL APPROVAL LOGIC
-         * The funds should already be in 'frozenBalance' from when the user
-         * requested the withdrawal. Now we permanently remove them.
-         */
-        if (user.frozenBalance < trx.amount) {
+        if (Number(user.frozenBalance) < trx.marginAmount) {
           throw new BadRequestException(
             'Insufficient frozen balance to complete withdrawal',
           );
         }
-
         await manager.decrement(
           User,
           { id: user.id },
           'frozenBalance',
-          trx.amount,
+          trx.marginAmount,
         );
+        trx.balanceAfter = balanceBefore;
       }
 
-      // 2. Finalize Transaction Status
       trx.status = TransactionStatus.APPROVED;
-      await manager.save(trx);
+      trx.notes = `${trx.type} of ₺${trx.marginAmount} approved by admin.`;
+      await manager.save(Transactions, trx);
 
-      return {
-        success: true,
-        message: `${trx.type} approved successfully`,
-      };
+      return { success: true, message: `${trx.type} approved successfully` };
     });
   }
 
   public async rejectTransaction(transactionId: string, adminNote?: string) {
     return await this.txRepo.manager.transaction(async (manager) => {
-      // 1. Fetch transaction with user details
-      const trx = await manager.findOne(Transaction, {
+      const trx = await manager.findOne(Transactions, {
         where: { id: transactionId },
         relations: ['user'],
       });
@@ -315,44 +282,35 @@ export class WalletService {
 
       const user = trx.user;
 
-      /**
-       * WITHDRAWAL REJECTION LOGIC
-       * If it's a withdrawal, the money is currently "frozen".
-       * We must move it back to the main balance so the user can use it again.
-       */
       if (trx.type === TransactionType.WITHDRAWAL) {
-        if (user.frozenBalance < trx.amount) {
-          // This should technically never happen if your createWithdrawal logic is solid
+        if (Number(user.frozenBalance) < trx.marginAmount) {
           throw new BadRequestException(
             'Critical error: Insufficient frozen balance to return',
           );
         }
-
-        // Move funds: Frozen -> Balance
         await manager.decrement(
           User,
           { id: user.id },
           'frozenBalance',
-          trx.amount,
+          trx.marginAmount,
         );
-        await manager.increment(User, { id: user.id }, 'balance', trx.amount);
+        await manager.increment(
+          User,
+          { id: user.id },
+          'balance',
+          trx.marginAmount,
+        );
+        trx.balanceAfter = Number(user.balance) + Number(trx.marginAmount);
       }
 
-      /**
-       * DEPOSIT REJECTION LOGIC
-       * Deposits don't touch the balance while PENDING.
-       * So we just update the status to REJECTED.
-       */
-
-      // 2. Finalize Transaction Status with Admin Note
       trx.status = TransactionStatus.REJECTED;
       trx.adminNote = adminNote || 'Transaction rejected by administrator';
-
-      await manager.save(trx);
+      trx.notes = `${trx.type} of ₺${trx.marginAmount} rejected. ${trx.adminNote}`;
+      await manager.save(Transactions, trx);
 
       return {
         success: true,
-        message: `${trx.type} rejected successfully. Funds returned if applicable.`,
+        message: `${trx.type} rejected. Funds returned if applicable.`,
       };
     });
   }

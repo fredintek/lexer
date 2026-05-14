@@ -15,12 +15,11 @@ import { Exclude } from 'class-transformer';
 import { LoginHistory } from './login-history.entity';
 import { RefreshToken } from './refresh-tokens.entity';
 import { PaymentMethod } from 'src/payment/entities/payment.entity';
-import { Transaction } from 'src/wallet/entities/transaction.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
 import { Kyc } from 'src/kyc/entities/kyc.entity';
-import { Trade } from 'src/trade/entities/trade.entity';
 import { Favorite } from 'src/yfinance/entities/favoriteStock.entity';
 import { Positions } from 'src/positions/entities/position.entity';
+import { Transactions } from 'src/transactions/entities/transactions.entity';
 
 export interface IAvatar {
   publicId: string;
@@ -162,8 +161,8 @@ export class User {
   @OneToMany(() => Kyc, (kyc) => kyc.reviewedBy)
   reviewedKycs?: Kyc[];
 
-  @OneToMany(() => Trade, (trade) => trade.user)
-  trades?: Trade[];
+  @OneToMany(() => Transactions, (tx) => tx.user)
+  transactions!: Transactions[];
 
   @Column({ nullable: true, type: 'text' })
   fcmToken?: string | null;
@@ -204,9 +203,6 @@ export class User {
 
   @OneToMany(() => Positions, (position) => position.user)
   positions!: Positions[];
-
-  @OneToMany(() => Transaction, (transaction) => transaction.user)
-  transactions!: Transaction[];
 
   @Column({ default: false })
   isTwoFactorEnabled!: boolean;

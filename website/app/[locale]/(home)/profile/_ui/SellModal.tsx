@@ -18,14 +18,16 @@ export default function SellModal({
   asset: any;
 }) {
   const t = useTranslations();
-  const [quantity, setQuantity] = useState(asset?.displayLot);
+  const [quantity, setQuantity] = useState<number | "">(
+    asset?.displayLot ?? "",
+  );
   const [sellPosition, { isLoading }] = useSellPositionMutation();
 
   const handleConfirmSell = async () => {
     try {
       await sellPosition({
         positionId: asset.id,
-        lotsToSell: quantity,
+        lotsToSell: Number(quantity),
       }).unwrap();
       toast.success(t("SELL_ORDER_SUCCESS"));
       onClose();
@@ -36,7 +38,8 @@ export default function SellModal({
 
   if (!isOpen || !asset) return null;
 
-  const grossReturn = quantity * (asset.currentPrice || asset.startingPrice);
+  const grossReturn =
+    Number(quantity) * (asset.currentPrice || asset.startingPrice);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -53,7 +56,7 @@ export default function SellModal({
             <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-2xl p-2 border border-slate-200 dark:border-slate-700">
               <input
                 type="number"
-                value={quantity}
+                value={quantity === 0 ? "" : (quantity ?? "")}
                 onChange={(e) =>
                   setQuantity(Math.min(asset.lots, Number(e.target.value)))
                 }
@@ -83,7 +86,7 @@ export default function SellModal({
           </div>
 
           <button
-            disabled={isLoading || quantity <= 0}
+            disabled={isLoading || Number(quantity) <= 0}
             onClick={handleConfirmSell}
             className="cursor-pointer w-full py-4 bg-down hover:bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs transition-all flex justify-center items-center gap-2"
           >

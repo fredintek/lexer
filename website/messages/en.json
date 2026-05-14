@@ -188,6 +188,7 @@
   "WALLET_SUBTITLE": "Manage your funds and process instant withdrawals to your bank or crypto wallet.",
   "TOTAL_BALANCE": "Total Balance",
   "PENDING_WITHDRAWALS": "Pending Withdrawals",
+  "WITHDRAWAL": "Withdrawal",
   "DEPOSIT_BTN": "Deposit",
   "LOCKED_REVIEW": "Locked for review",
   "PROCESS_WITHDRAWAL": "Process Withdrawal",
@@ -498,5 +499,8 @@
   "INACTIVE": "Inactive",
   "REJECTED": "Rejected",
   "PAUSED": "Paused",
-  "SUSPENDED": "Suspended"
+  "SUSPENDED": "Suspended",
+  "DEPOSITED_TO": "Deposit To",
+  "BUY_OPEN": "Buy Open",
+  "SELL_PARTIAL": "Partial Sell"
 }

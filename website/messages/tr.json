@@ -498,5 +498,9 @@
   "INACTIVE": "Pasif",
   "REJECTED": "Reddedildi",
   "PAUSED": "Durduruldu",
-  "SUSPENDED": "Askıya Alındı"
+  "SUSPENDED": "Askıya Alındı",
+  "DEPOSITED_TO": "Yatırılacak Kişi",
+  "BUY_OPEN": "Açık Alım",
+  "SELL_PARTIAL": "Kısmi Satış",
+  "WITHDRAWAL": "Çekilme"
 }

@@ -26,8 +26,11 @@ import * as crypto from 'crypto';
 import { AuthService } from 'src/auth/providers/auth.service';
 import { EmailService } from 'src/email/providers/email.service';
 import { ConfigService } from '@nestjs/config';
-import { Trade, TradeStatusEnum } from 'src/trade/entities/trade.entity';
 import { KYCStatus } from 'src/kyc/dtos';
+import {
+  Transactions,
+  TransactionStatus,
+} from 'src/transactions/entities/transactions.entity';
 
 @Injectable()
 export class UserService {
@@ -37,9 +40,6 @@ export class UserService {
      */
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
-    @InjectRepository(Trade)
-    private readonly tradeRepository: Repository<Trade>,
 
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
@@ -60,6 +60,9 @@ export class UserService {
      * Injecting Event Emitter
      */
     private readonly eventEmitter: EventEmitter2,
+
+    @InjectRepository(Transactions)
+    private transactionsRepository: Repository<Transactions>,
   ) {}
 
   /**
@@ -374,25 +377,30 @@ export class UserService {
   }
 
   public async getUserStatistics(userId: string) {
+    // 1. Fetch User Balance
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      select: ['balance', 'frozenBalance'],
-      loadEagerRelations: false,
+      select: ['id', 'balance', 'frozenBalance'],
     });
 
-    const stats = await this.tradeRepository
-      .createQueryBuilder('trade')
-      .where('trade.userId = :userId', { userId })
-      .andWhere('trade.status = :status', { status: TradeStatusEnum.COMPLETED })
+    // 2. Aggregate Transaction Stats
+    // We filter by COMPLETED status and specific SELL/CANCEL types that realize profit/loss
+    const stats = await this.transactionsRepository
+      .createQueryBuilder('tx')
+      .where('tx.userId = :userId', { userId })
+      .andWhere('tx.status = :status', { status: TransactionStatus.COMPLETED })
       .select([
-        'COUNT(trade.id) AS totalTrades',
-        'SUM(trade.pnl) AS totalPnl',
-        'SUM(trade.quantity * trade.priceAtExecution) AS totalInvested',
-        // Win Rate calculation: count trades where PnL > 0
-        'COUNT(CASE WHEN trade.pnl > 0 THEN 1 END) AS winCount',
-        // Profit Factor calculation: Sum of profits / Sum of losses
-        'SUM(CASE WHEN trade.pnl > 0 THEN trade.pnl ELSE 0 END) AS grossProfit',
-        'SUM(CASE WHEN trade.pnl < 0 THEN ABS(trade.pnl) ELSE 0 END) AS grossLoss',
+        // Count SELL transactions as "trades" (or you can count positions)
+        "COUNT(CASE WHEN tx.type IN ('SELL_FULL', 'SELL_PARTIAL') THEN 1 END) AS totalTrades",
+        // Total PnL from the realizedPnL column
+        'SUM(tx.realizedPnL) AS totalPnl',
+        // Total Invested (Volume): sum of (lots * execution price) for BUY orders
+        "SUM(CASE WHEN tx.type IN ('BUY_OPEN', 'BUY_MERGE') THEN tx.lots * tx.priceAtExecution ELSE 0 END) AS totalInvested",
+        // Win Count: Transactions where realizedPnL was positive
+        'COUNT(CASE WHEN tx.realizedPnL > 0 THEN 1 END) AS winCount',
+        // Profit Factor Components
+        'SUM(CASE WHEN tx.realizedPnL > 0 THEN tx.realizedPnL ELSE 0 END) AS grossProfit',
+        'SUM(CASE WHEN tx.realizedPnL < 0 THEN ABS(tx.realizedPnL) ELSE 0 END) AS grossLoss',
       ])
       .getRawOne();
 
@@ -402,11 +410,12 @@ export class UserService {
     const grossLoss = parseFloat(stats.grossLoss) || 0;
 
     return {
-      balance: user?.balance || 0,
+      balance: parseFloat(user?.balance as any) || 0,
+      frozenBalance: parseFloat(user?.frozenBalance as any) || 0,
       totalTrades,
       totalPnl: parseFloat(stats.totalPnl) || 0,
       totalInvested: parseFloat(stats.totalInvested) || 0,
-      // Calculations for your MetricCards
+      // Metrics
       winRate: totalTrades > 0 ? (winCount / totalTrades) * 100 : 0,
       avgProfit: winCount > 0 ? grossProfit / winCount : 0,
       profitFactor:

@@ -6,7 +6,12 @@ export const bankAccountApi = apiReducer.injectEndpoints({
       query: () => "admin/bank-accounts/active",
       providesTags: ["BankAccount"],
     }),
+    getBankAccounts: builder.query<any[], void>({
+      query: () => "admin/bank-accounts",
+      providesTags: ["BankAccount"],
+    }),
   }),
 });
 
-export const { useGetActiveBankAccountQuery } = bankAccountApi;
+export const { useGetActiveBankAccountQuery, useGetBankAccountsQuery } =
+  bankAccountApi;
