@@ -30,17 +30,29 @@ export class RefactoredTransactionsDB1778737242898 implements MigrationInterface
         );
       }
     };
+    await dropFKIfExists('login_history', 'FK_ad9ce49cb73c0b33746a56b6bd1');
     await dropIndexIfExists('login_history', 'FK_ad9ce49cb73c0b33746a56b6bd1');
 
+    await dropFKIfExists('refresh_tokens', 'FK_3ddc983c5f7bcf132fd8732c3f4');
     await dropIndexIfExists('refresh_tokens', 'FK_3ddc983c5f7bcf132fd8732c3f4');
+
+    await dropFKIfExists('refresh_tokens', 'FK_8b335d6a495c0aee44235369167');
     await dropIndexIfExists('refresh_tokens', 'FK_8b335d6a495c0aee44235369167');
+
+    await dropFKIfExists('payment_method', 'FK_34a4419ef2010224d7ff600659d');
     await dropIndexIfExists('payment_method', 'FK_34a4419ef2010224d7ff600659d');
+
+    await dropFKIfExists('notification', 'FK_1ced25315eb974b73391fb1c81b');
     await dropIndexIfExists('notification', 'FK_1ced25315eb974b73391fb1c81b');
+
+    await dropFKIfExists('kyc', 'FK_460f24691d7f582c4b465861782');
     await dropIndexIfExists('kyc', 'FK_460f24691d7f582c4b465861782');
+
+    await dropFKIfExists('positions', 'FK_0cf2caecfba00a6746ec1ff87a3');
     await dropIndexIfExists('positions', 'FK_0cf2caecfba00a6746ec1ff87a3');
 
     await queryRunner.query(
-      `CREATE TABLE \`transactions\` (\`id\` varchar(36) NOT NULL, \`type\` enum ('BUY_OPEN', 'BUY_WAITING', 'BUY_MERGE', 'SELL_FULL', 'SELL_PARTIAL', 'CANCEL', 'DEPOSIT', 'WITHDRAWAL') NOT NULL, \`symbol\` varchar(255) NOT NULL, \`lots\` decimal(18,4) NOT NULL, \`priceAtExecution\` decimal(18,4) NOT NULL, \`marginAmount\` decimal(18,2) NOT NULL, \`realizedPnL\` decimal(18,2) NOT NULL DEFAULT '0.00', \`commission\` decimal(18,2) NOT NULL DEFAULT '0.00', \`balanceBefore\` decimal(18,2) NOT NULL, \`balanceAfter\` decimal(18,2) NOT NULL, \`notes\` varchar(255) NULL, \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`method\` varchar(255) NULL, \`reference\` varchar(255) NULL, \`status\` enum ('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'COMPLETED', \`adminNote\` varchar(255) NULL, \`userId\` varchar(36) NULL, \`positionId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
+      `CREATE TABLE IF NOT EXISTS \`transactions\` (\`id\` varchar(36) NOT NULL, \`type\` enum ('BUY_OPEN', 'BUY_WAITING', 'BUY_MERGE', 'SELL_FULL', 'SELL_PARTIAL', 'CANCEL', 'DEPOSIT', 'WITHDRAWAL') NOT NULL, \`symbol\` varchar(255) NOT NULL, \`lots\` decimal(18,4) NOT NULL, \`priceAtExecution\` decimal(18,4) NOT NULL, \`marginAmount\` decimal(18,2) NOT NULL, \`realizedPnL\` decimal(18,2) NOT NULL DEFAULT '0.00', \`commission\` decimal(18,2) NOT NULL DEFAULT '0.00', \`balanceBefore\` decimal(18,2) NOT NULL, \`balanceAfter\` decimal(18,2) NOT NULL, \`notes\` varchar(255) NULL, \`createdAt\` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), \`method\` varchar(255) NULL, \`reference\` varchar(255) NULL, \`status\` enum ('PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED') NOT NULL DEFAULT 'COMPLETED', \`adminNote\` varchar(255) NULL, \`userId\` varchar(36) NULL, \`positionId\` varchar(36) NULL, PRIMARY KEY (\`id\`)) ENGINE=InnoDB`,
     );
     await queryRunner.query(
       `ALTER TABLE \`stocks\` CHANGE \`name\` \`name\` varchar(255) NULL`,
@@ -242,9 +254,14 @@ export class RefactoredTransactionsDB1778737242898 implements MigrationInterface
     await queryRunner.query(
       `ALTER TABLE \`notification\` ADD CONSTRAINT \`FK_1ced25315eb974b73391fb1c81b\` FOREIGN KEY (\`userId\`) REFERENCES \`user\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
+
+
+    await dropFKIfExists('kyc', 'FK_ca948073ed4a3ba22030d37b3db');
     await queryRunner.query(
       `ALTER TABLE \`kyc\` ADD CONSTRAINT \`FK_ca948073ed4a3ba22030d37b3db\` FOREIGN KEY (\`userId\`) REFERENCES \`user\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
+
+    await dropFKIfExists('kyc', 'FK_460f24691d7f582c4b465861782');
     await queryRunner.query(
       `ALTER TABLE \`kyc\` ADD CONSTRAINT \`FK_460f24691d7f582c4b465861782\` FOREIGN KEY (\`reviewedById\`) REFERENCES \`user\`(\`id\`) ON DELETE NO ACTION ON UPDATE NO ACTION`,
     );
