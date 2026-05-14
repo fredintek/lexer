@@ -3,6 +3,7 @@ import DepositModal from "@/app/[locale]/(home)/trade/_ui/DepositModal";
 import DataTable, { Column } from "@/components/dataTable/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import { formatCurrency } from "@/lib/helpers";
+import { useGetBankAccountsQuery } from "@/lib/redux/services/bank-account.api";
 import {
   useAddPaymentMethodMutation,
   useGetPaymentMethodsQuery,
@@ -48,6 +49,8 @@ export default function WalletSection({
     { status, type },
   );
   const [selectedHistory, setSelectedHistory] = useState<any>(null);
+  const { data: allPaymentMethod } = useGetPaymentMethodsQuery();
+  const { data: companyAccounts } = useGetBankAccountsQuery();
 
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [amount, setAmount] = useState<number | null>(null);
@@ -73,17 +76,7 @@ export default function WalletSection({
     },
     {
       header: t("COL_TYPE"),
-      render: (tx) => (
-        <span
-          className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md ${
-            tx.type === "DEPOSIT"
-              ? "bg-up/10 text-up"
-              : "bg-slate-100 dark:bg-slate-800 text-slate-400"
-          }`}
-        >
-          {tx.type === "DEPOSIT" ? t("DEPOSITS") : t("WITHDRAWALS")}
-        </span>
-      ),
+      render: (tx) => <StatusBadge status={tx.type} />,
     },
     {
       header: t("COL_METHOD"),
@@ -105,7 +98,8 @@ export default function WalletSection({
           className={`text-sm font-black tabular-nums ${tx.type === "WITHDRAWAL" ? "text-red-500" : "text-up"}`}
         >
           {tx.type === "WITHDRAWAL" ? "-" : "+"}
-          {formatCurrency(tx.amount)} <span className="text-[10px]">TRY</span>
+          {formatCurrency(tx.marginAmount)}{" "}
+          <span className="text-[10px]">TRY</span>
         </span>
       ),
     },
@@ -419,7 +413,7 @@ export default function WalletSection({
                   {selectedHistory.type} {t("TOTAL")}
                 </p>
                 <p className="text-3xl font-black text-fg tracking-tighter">
-                  {formatCurrency(selectedHistory.amount)}
+                  {formatCurrency(selectedHistory.marginAmount)}
                 </p>
               </div>
               <StatusBadge status={selectedHistory.status} />
@@ -427,20 +421,33 @@ export default function WalletSection({
 
             {/* 2. Target Bank Details (Only for Deposits) */}
             {selectedHistory.type === "DEPOSIT" &&
-              selectedHistory.bankAccount && (
+              selectedHistory.reference && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black uppercase text-slate-500 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
                     <Building2 size={14} /> {t("DEPOSITED_TO")}
                   </h4>
                   <div className="p-4 bg-brand/5 border border-brand/10 rounded-2xl">
                     <p className="text-xs font-black text-brand uppercase">
-                      {selectedHistory.bankAccount.bankName}
+                      {
+                        companyAccounts?.find(
+                          (item) => item?.id === selectedHistory?.reference,
+                        )?.bankName
+                      }
                     </p>
                     <p className="text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400 mt-1">
-                      {selectedHistory.bankAccount.accountNumber}
+                      {
+                        companyAccounts?.find(
+                          (item) => item?.id === selectedHistory?.reference,
+                        )?.accountNumber
+                      }
                     </p>
                     <p className="text-[9px] font-medium text-slate-500 mt-1 italic">
-                      Label: {selectedHistory.bankAccount.title}
+                      Label:{" "}
+                      {
+                        companyAccounts?.find(
+                          (item) => item?.id === selectedHistory?.reference,
+                        )?.title
+                      }
                     </p>
                   </div>
                 </div>
@@ -448,7 +455,7 @@ export default function WalletSection({
 
             {/* 3. Withdrawal Destination (Only for Withdrawals) */}
             {selectedHistory.type === "WITHDRAWAL" &&
-              selectedHistory.paymentMethod && (
+              selectedHistory.method && (
                 <div className="space-y-3">
                   <h4 className="text-[10px] font-black uppercase text-orange-500 border-b border-orange-100 dark:border-orange-900/30 pb-2 flex items-center gap-2">
                     <CreditCard size={14} /> {t("PAYOUT_DESTINATION")}
@@ -460,11 +467,17 @@ export default function WalletSection({
                           {t("METHOD_TYPE")}
                         </p>
                         <span className="text-xs font-black text-fg uppercase">
-                          {selectedHistory.paymentMethod.type}
+                          {
+                            allPaymentMethod?.find(
+                              (item) => item?.id === selectedHistory?.method,
+                            )?.type
+                          }
                         </span>
                       </div>
                       <div className="bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm">
-                        {selectedHistory.paymentMethod.type === "CRYPTO" ? (
+                        {allPaymentMethod?.find(
+                          (item) => item?.id === selectedHistory?.method,
+                        )?.type === "CRYPTO" ? (
                           <Wallet size={20} className="text-orange-500" />
                         ) : (
                           <Building2 size={20} className="text-orange-500" />
@@ -473,33 +486,34 @@ export default function WalletSection({
                     </div>
 
                     <div className="space-y-3">
-                      <div>
-                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-                          {t("ACCOUNT_NETWORK")}
-                        </p>
-                        <p className="text-sm font-bold text-fg">
-                          {selectedHistory.paymentMethod.name}
-                        </p>
-                      </div>
-
                       <div className="group relative">
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
                           {t("ACCOUNT_WALLET")}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <p className="text-sm font-mono font-black text-brand break-all">
-                            {selectedHistory.paymentMethod.detail}
+                            {
+                              allPaymentMethod?.find(
+                                (item) => item?.id === selectedHistory?.method,
+                              )?.detail
+                            }
                           </p>
                         </div>
                       </div>
 
-                      {selectedHistory.paymentMethod.bankName && (
+                      {allPaymentMethod?.find(
+                        (item) => item?.id === selectedHistory?.method,
+                      )?.name && (
                         <div>
                           <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
                             {t("BANK_NAME")}
                           </p>
                           <p className="text-xs font-bold text-fg">
-                            {selectedHistory.paymentMethod.bankName}
+                            {
+                              allPaymentMethod?.find(
+                                (item) => item?.id === selectedHistory?.method,
+                              )?.name
+                            }
                           </p>
                         </div>
                       )}

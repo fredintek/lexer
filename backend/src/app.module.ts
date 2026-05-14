@@ -28,11 +28,11 @@ import { BannerModule } from './banner/banner.module';
 import { ChatModule } from './chat/chat.module';
 import { KycModule } from './kyc/kyc.module';
 import { YfinanceModule } from './yfinance/yfinance.module';
-import { TradeModule } from './trade/trade.module';
 import { SettingsModule } from './settings/settings.module';
 import { PositionsModule } from './positions/positions.module';
 import * as path from 'path';
 import { UserStatusGuard } from './auth/guards/user-status.guard';
+import { TransactionsModule } from './transactions/transactions.module';
 
 @Module({
   imports: [
@@ -95,9 +95,9 @@ import { UserStatusGuard } from './auth/guards/user-status.guard';
     ChatModule,
     KycModule,
     YfinanceModule,
-    TradeModule,
     SettingsModule,
     PositionsModule,
+    TransactionsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,5 @@
 import SellModal from "@/app/[locale]/(home)/profile/_ui/SellModal";
-import { formatCurrency, getLogoUrl } from "@/lib/helpers";
+import { formatCurrency, formatDate, getLogoUrl } from "@/lib/helpers";
 import {
   positionApi,
   useCancelPositionMutation,
@@ -232,6 +232,15 @@ const MobilePositions = (props: Props) => {
                           <span>{t("CANCEL_ORDER")}</span>
                         )}
                       </button>
+                    )}
+
+                    {pos.status === "closed" && (
+                      <p
+                        className={`text-[9px] font-black text-slate-500 uppercase tracking-widest flex flex-col gap-1`}
+                      >
+                        <span>{t("DATE")}:</span>
+                        <span>{formatDate(pos.closingDate)}</span>
+                      </p>
                     )}
                   </div>
                 );

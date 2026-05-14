@@ -144,17 +144,17 @@ export default function MobileProfile() {
         <div className="space-y-4">
           <StatusRow
             label="Email"
-            status={user?.isEmailVerified ? user?.isEmailVerified : "INACTIVE"}
+            status={user?.isEmailVerified ? "APPROVED" : "INACTIVE"}
             color="text-up"
           />
           <StatusRow
             label="KYC"
-            status={user?.kyc?.status ?? "INACTIVE"}
+            status={user?.kyc?.status ? user?.kyc?.status : "INACTIVE"}
             color="text-amber-500"
           />
           <StatusRow
             label="2FA"
-            status={user?.mfaSecret ? "VERIFIED" : "INACTIVE"}
+            status={user?.mfaSecret ? "APPROVED" : "INACTIVE"}
             color="text-down"
           />
         </div>

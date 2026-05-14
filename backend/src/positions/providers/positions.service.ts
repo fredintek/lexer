@@ -1,16 +1,19 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { ActiveUserInterface } from 'src/lib/types';
 import { CreatePositionDto, EditUserPositionDto } from '../dtos';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User, UserStatus } from 'src/user/entities/user.entity';
+import { User } from 'src/user/entities/user.entity';
 import { DataSource, In, Repository } from 'typeorm';
 import { YfinanceService } from 'src/yfinance/providers/yfinance.service';
 import { Positions, PositionStatus } from '../entities/position.entity';
+import {
+  Transactions,
+  TransactionType,
+} from 'src/transactions/entities/transactions.entity';
 
 @Injectable()
 export class PositionsService {
@@ -79,7 +82,10 @@ export class PositionsService {
         },
       });
 
+      let wasMerged = false;
+
       if (targetPosition && isMarketOpen) {
+        wasMerged = true;
         // 1. MERGE LOGIC
         const oldLots = Number(targetPosition.lots);
         const newLots = Number(createPositionDto.lots);
@@ -97,6 +103,7 @@ export class PositionsService {
         targetPosition.displayLot = totalLots;
         targetPosition.displayCost = newAveragePrice;
       } else {
+        wasMerged = false;
         // 2. CREATE NEW LOGIC (Assign to targetPosition so we can save it later)
         targetPosition = queryRunner.manager.create(Positions, {
           user,
@@ -121,6 +128,30 @@ export class PositionsService {
       // 4. Save both (the user and the position—whether it was new or existing)
       await queryRunner.manager.save(user);
       const savedResult = await queryRunner.manager.save(targetPosition);
+
+      // TRANSACTIONS
+      const balanceBefore = Number(user.balance) + requiredMargin;
+      const tx = queryRunner.manager.create(Transactions, {
+        type:
+          targetPosition.status === PositionStatus.WAITING
+            ? TransactionType.BUY_WAITING
+            : wasMerged
+              ? TransactionType.BUY_MERGE
+              : TransactionType.BUY_OPEN,
+        user,
+        symbol: createPositionDto.symbol,
+        position: savedResult,
+        lots: createPositionDto.lots,
+        priceAtExecution: currentPrice,
+        marginAmount: requiredMargin,
+        balanceBefore,
+        balanceAfter: Number(user.balance),
+        notes: wasMerged
+          ? `Merged into existing position. New avg: ${targetPosition.averageEntryPrice}`
+          : undefined,
+      });
+
+      await queryRunner.manager.save(tx);
 
       await queryRunner.commitTransaction();
 
@@ -255,9 +286,10 @@ export class PositionsService {
 
       const user = position.user;
       const refundAmount = Number(position.marginUsed);
+      const balanceBefore = Number(user.balance);
 
       // 3. Refund the user's balance
-      user.balance = Number(user.balance) + refundAmount;
+      user.balance = balanceBefore + refundAmount;
       await queryRunner.manager.save(user);
 
       position.status = PositionStatus.CANCELLED;
@@ -265,6 +297,24 @@ export class PositionsService {
 
       position.marginUsed = 0;
       await queryRunner.manager.save(position);
+
+      // ✅ Record transaction atomically
+      const tx = queryRunner.manager.create(Transactions, {
+        type: TransactionType.CANCEL,
+        symbol: position.symbol,
+        lots: Number(position.lots),
+        priceAtExecution: Number(position.startingPrice),
+        marginAmount: refundAmount,
+        realizedPnL: 0,
+        commission: 0,
+        balanceBefore,
+        balanceAfter: Number(user.balance),
+        notes: `Waiting order cancelled. ₺${refundAmount.toLocaleString('tr-TR')} refunded.`,
+        user,
+        position,
+      });
+
+      await queryRunner.manager.save(tx);
 
       await queryRunner.commitTransaction();
 
@@ -284,7 +334,7 @@ export class PositionsService {
   public async sellPosition(
     currentUser: ActiveUserInterface,
     positionId: string,
-    lotsToSell: number, // Use actual lots here from the modal input
+    lotsToSell: number,
   ) {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
@@ -333,8 +383,12 @@ export class PositionsService {
       // 3. Update User Balance
       const user = position.user;
       const totalPayout = marginToRelease + netRealizedPnL;
-      user.balance = Number(user.balance) + totalPayout;
+      const balanceBefore = Number(user.balance);
+
+      user.balance = balanceBefore + totalPayout;
       await queryRunner.manager.save(user);
+
+      const isFullSell = lotsToSell === actualTotalLots;
 
       // 4. Update Position Record
       if (lotsToSell === actualTotalLots) {
@@ -363,6 +417,29 @@ export class PositionsService {
       }
 
       await queryRunner.manager.save(position);
+
+      // ✅ Record transaction atomically
+      const tx = queryRunner.manager.create(Transactions, {
+        type: isFullSell
+          ? TransactionType.SELL_FULL
+          : TransactionType.SELL_PARTIAL,
+        symbol: position.symbol,
+        lots: lotsToSell,
+        priceAtExecution: exitPrice,
+        marginAmount: marginToRelease,
+        realizedPnL: netRealizedPnL,
+        commission: commissionToDeduct,
+        balanceBefore,
+        balanceAfter: Number(user.balance),
+        notes: !isFullSell
+          ? `Partial sell: ${lotsToSell} of ${actualTotalLots} lots`
+          : undefined,
+        user,
+        position,
+      });
+
+      await queryRunner.manager.save(tx);
+
       await queryRunner.commitTransaction();
 
       return { success: true, payout: totalPayout };

@@ -387,7 +387,7 @@ export class AuthService {
           });
 
           // Fire and forget (No 'await')
-          this.emailService
+          await this.emailService
             .sendLoginOtp(user, loginOtp, localizeDate(loginOtpTokenExp))
             .catch((err) => console.error('MFA Email Failed', err));
 

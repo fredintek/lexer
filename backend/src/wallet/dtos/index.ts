@@ -10,7 +10,7 @@ import {
   IsNotEmpty,
   IsNumberString,
 } from 'class-validator';
-import { TransactionStatus } from '../entities/transaction.entity';
+import { TransactionStatus } from 'src/transactions/entities/transactions.entity';
 
 export class WithdrawRequestDto {
   @IsNumber()
