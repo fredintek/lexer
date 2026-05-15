@@ -469,5 +469,12 @@
   "SECURITY_TOKEN": "Güvenlik Tokeni",
   "TOKEN_PLACEHOLDER": "Token Girin...",
   "UPDATE_PASSWORD": "Şifreyi Güncelle",
-  "CANCEL_RETURN_LOGIN": "İptal et ve girişe dön"
+  "CANCEL_RETURN_LOGIN": "İptal et ve girişe dön",
+  "BUY_OPEN": "Alış Açılış",
+  "BUY_WAITING": "Bekleyen Alış",
+  "BUY_MERGE": "Pozisyon Birleştirme",
+  "SELL_FULL": "Tam Satış",
+  "SELL_PARTIAL": "Parçalı Satış",
+  "DEPOSIT": "Yatırma",
+  "WITHDRAWAL": "Çekme"
 }

@@ -9,7 +9,7 @@ export const positionApi = apiReducer.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["POSITIONS", "Positions"],
+      invalidatesTags: ["POSITIONS", "Positions", "TRANSACTIONS"],
     }),
 
     cancelPosition: builder.mutation({
@@ -18,7 +18,7 @@ export const positionApi = apiReducer.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["POSITIONS", "Positions"],
+      invalidatesTags: ["POSITIONS", "Positions", "TRANSACTIONS"],
     }),
 
     getMyAssets: builder.query({
@@ -26,7 +26,7 @@ export const positionApi = apiReducer.injectEndpoints({
         url: "/positions/my-assets",
         method: "GET",
       }),
-      providesTags: ["POSITIONS", "Positions"],
+      providesTags: ["POSITIONS", "Positions", "TRANSACTIONS"],
     }),
 
     sellPosition: builder.mutation<
@@ -38,7 +38,7 @@ export const positionApi = apiReducer.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["POSITIONS", "Positions"],
+      invalidatesTags: ["POSITIONS", "Positions", "TRANSACTIONS"],
     }),
 
     getTransactionHistory: builder.query<any, void>({

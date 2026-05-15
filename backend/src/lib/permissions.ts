@@ -21,4 +21,7 @@ export const PERMISSIONS = {
 
   // Positions
   CAN_MANAGE_POSITIONS: 'positions:manage',
+
+  // Payment methods
+  CAN_MANAGE_PAYMENT: 'payment:manage',
 };

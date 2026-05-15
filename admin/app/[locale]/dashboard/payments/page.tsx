@@ -38,6 +38,7 @@ import {
 import { formatCurrency } from "@/lib/helpers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslations } from "next-intl";
+import { useGetPaymentMethodsByUserIdQuery } from "@/lib/redux/services/payment.api";
 
 export default function PaymentsControlPage() {
   const t = useTranslations();
@@ -80,6 +81,9 @@ export default function PaymentsControlPage() {
 
   const [rejectTx, { isLoading: txIsRejecting }] =
     useRejectTransactionMutation();
+  const { data: paymentMethods } = useGetPaymentMethodsByUserIdQuery(
+    selectedTx?.user?.id,
+  );
   const [approveTx] = useApproveTransactionMutation();
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [adminNote, setAdminNote] = useState("");
@@ -182,19 +186,13 @@ export default function PaymentsControlPage() {
     },
     {
       header: t("TYPE"),
-      render: (tx) => (
-        <span
-          className={`text-[9px] font-black px-2 py-0.5 rounded-full ${tx.type === "DEPOSIT" ? "bg-up/10 text-up" : "bg-orange-500/10 text-orange-500"}`}
-        >
-          {tx.type}
-        </span>
-      ),
+      render: (tx) => <StatusBadge status={tx?.type} />,
     },
     {
       header: t("AMOUNT"),
       render: (tx) => (
         <div className="text-xs font-black text-fg tracking-tight">
-          {formatCurrency(tx.amount)}
+          ₺{formatCurrency(tx.marginAmount)}
         </div>
       ),
     },
@@ -491,34 +489,14 @@ export default function PaymentsControlPage() {
                   {selectedTx.type} {t("TOTAL")}
                 </p>
                 <p className="text-3xl font-black text-fg tracking-tighter">
-                  {formatCurrency(selectedTx.amount)}
+                  ₺{formatCurrency(selectedTx.marginAmount)}
                 </p>
               </div>
               <StatusBadge status={selectedTx.status} />
             </div>
 
-            {/* 2. Target Bank Details (Only for Deposits) */}
-            {selectedTx.type === "DEPOSIT" && selectedTx.bankAccount && (
-              <div className="space-y-3">
-                <h4 className="text-[10px] font-black uppercase text-slate-500 border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-                  <Building2 size={14} /> {t("DEPOSITED_TO")}
-                </h4>
-                <div className="p-4 bg-brand/5 border border-brand/10 rounded-2xl">
-                  <p className="text-xs font-black text-brand uppercase">
-                    {selectedTx.bankAccount.bankName}
-                  </p>
-                  <p className="text-[10px] font-mono font-bold text-slate-600 dark:text-slate-400 mt-1">
-                    {selectedTx.bankAccount.accountNumber}
-                  </p>
-                  <p className="text-[9px] font-medium text-slate-500 mt-1 italic">
-                    Label: {selectedTx.bankAccount.title}
-                  </p>
-                </div>
-              </div>
-            )}
-
             {/* 3. Withdrawal Destination (Only for Withdrawals) */}
-            {selectedTx.type === "WITHDRAWAL" && selectedTx.paymentMethod && (
+            {selectedTx.type === "WITHDRAWAL" && selectedTx.method && (
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black uppercase text-orange-500 border-b border-orange-100 dark:border-orange-900/30 pb-2 flex items-center gap-2">
                   <CreditCard size={14} /> {t("PAYOUT_DESTINATION")}
@@ -530,11 +508,17 @@ export default function PaymentsControlPage() {
                         {t("METHOD_TYPE")}
                       </p>
                       <span className="text-xs font-black text-fg uppercase">
-                        {selectedTx.paymentMethod.type}
+                        {
+                          paymentMethods?.find(
+                            (item) => item?.id === selectedTx?.method,
+                          )?.type
+                        }
                       </span>
                     </div>
                     <div className="bg-white dark:bg-slate-800 p-2 rounded-xl shadow-sm">
-                      {selectedTx.paymentMethod.type === "CRYPTO" ? (
+                      {paymentMethods?.find(
+                        (item) => item?.id === selectedTx?.method,
+                      )?.type === "CRYPTO" ? (
                         <Wallet size={20} className="text-orange-500" />
                       ) : (
                         <Building2 size={20} className="text-orange-500" />
@@ -543,33 +527,34 @@ export default function PaymentsControlPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <div>
-                      <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
-                        {t("ACCOUNT_NETWORK")}
-                      </p>
-                      <p className="text-sm font-bold text-fg">
-                        {selectedTx.paymentMethod.name}
-                      </p>
-                    </div>
-
                     <div className="group relative">
                       <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
                         {t("ACCOUNT_WALLET")}
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm font-mono font-black text-brand break-all">
-                          {selectedTx.paymentMethod.detail}
+                          {
+                            paymentMethods?.find(
+                              (item) => item?.id === selectedTx?.method,
+                            )?.detail
+                          }
                         </p>
                       </div>
                     </div>
 
-                    {selectedTx.paymentMethod.bankName && (
+                    {paymentMethods?.find(
+                      (item) => item?.id === selectedTx?.method,
+                    )?.name && (
                       <div>
                         <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
                           {t("BANK_NAME")}
                         </p>
                         <p className="text-xs font-bold text-fg">
-                          {selectedTx.paymentMethod.bankName}
+                          {
+                            paymentMethods?.find(
+                              (item) => item?.id === selectedTx?.method,
+                            )?.name
+                          }
                         </p>
                       </div>
                     )}
@@ -614,6 +599,14 @@ export default function PaymentsControlPage() {
                     {selectedTx.adminNote}
                   </p>
                 </div>
+              </div>
+            )}
+
+            {selectedTx?.notes && (
+              <div className="p-4 bg-orange-50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 rounded-2xl">
+                <p className="text-xs font-medium text-orange-800 dark:text-orange-400 leading-relaxed">
+                  {selectedTx?.notes}
+                </p>
               </div>
             )}
 

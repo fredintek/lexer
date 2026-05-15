@@ -12,7 +12,8 @@ import { ActiveUser } from 'src/auth/decorators/activeUser.decorator';
 import { ActiveUserInterface } from 'src/lib/types';
 import { CreatePaymentMethodDto } from './dtos/payment.dto';
 import { UserStatus as UserStatusEnum } from 'src/user/entities/user.entity';
-import { UserStatus } from 'src/auth/decorators/auth.decorator';
+import { Permissions, UserStatus } from 'src/auth/decorators/auth.decorator';
+import { PERMISSIONS } from 'src/lib/permissions';
 
 @Controller('payment')
 export class PaymentController {
@@ -27,6 +28,12 @@ export class PaymentController {
   )
   async getMyMethods(@ActiveUser() currentUser: ActiveUserInterface) {
     return this.service.findAll(currentUser);
+  }
+
+  @Get('user/:userId')
+  @Permissions(PERMISSIONS.CAN_MANAGE_PAYMENT)
+  async getUserPaymentMethods(@Param('userId') userId: string) {
+    return await this.service.findByUserId(userId);
   }
 
   @Post()

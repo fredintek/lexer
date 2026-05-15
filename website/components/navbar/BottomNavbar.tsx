@@ -7,10 +7,12 @@ import {
   Plus,
   UserRound,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 type Props = {};
 
 const BottomNavbar = (props: Props) => {
+  const t = useTranslations();
   const pathname = usePathname();
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg border-t border-slate-200 dark:border-slate-800 flex">
@@ -23,7 +25,7 @@ const BottomNavbar = (props: Props) => {
       >
         <Home size={20} />
         <span className="text-[9px] font-black uppercase tracking-wider">
-          Home
+          {t("HOME")}
         </span>
       </Link>
 
@@ -36,7 +38,7 @@ const BottomNavbar = (props: Props) => {
       >
         <LayoutDashboard size={20} />
         <span className="text-[9px] font-black uppercase tracking-wider">
-          Markets
+          {t("MARKETS")}
         </span>
       </Link>
 
@@ -49,7 +51,7 @@ const BottomNavbar = (props: Props) => {
           <Plus size={20} className="text-white" />
         </div>
         <span className="text-[9px] font-black uppercase tracking-wider text-slate-400">
-          Trade
+          {t("TRADES")}
         </span>
       </Link>
 
@@ -62,7 +64,7 @@ const BottomNavbar = (props: Props) => {
       >
         <Briefcase size={20} />
         <span className="text-[9px] font-black uppercase tracking-wider">
-          Positions
+          {t("POSITIONS")}
         </span>
       </Link>
 
@@ -75,7 +77,7 @@ const BottomNavbar = (props: Props) => {
       >
         <UserRound size={20} />
         <span className="text-[9px] font-black uppercase tracking-wider">
-          Profile
+          {t("PROFILE")}
         </span>
       </Link>
     </div>

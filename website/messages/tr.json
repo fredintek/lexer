@@ -503,5 +503,9 @@
   "BUY_OPEN": "Açık Alım",
   "SELL_PARTIAL": "Kısmi Satış",
   "WITHDRAWAL": "Çekilme",
-  "KYC_FILES_CONSTRAINT": "Her dosya yüklemesi 5 MB'ı geçmemelidir."
+  "KYC_FILES_CONSTRAINT": "Her dosya yüklemesi 5 MB'ı geçmemelidir.",
+  "HOME": "Ana Sayfa",
+  "TRADES": "Ticaret",
+  "SOLD": "Satılmış",
+  "EXIT": "Çıkış"
 }

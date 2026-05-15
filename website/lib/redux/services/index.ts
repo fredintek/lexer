@@ -107,6 +107,7 @@ export const apiReducer = createApi({
     "SETTINGS",
     "Favorites",
     "POSITIONS",
+    "TRANSACTIONS",
   ],
   endpoints: (builder) => ({}),
 });

@@ -92,6 +92,7 @@ export const lexerApi = createApi({
     "Stocks",
     "SETTINGS",
     "POSITIONS",
+    "PAYMENTS",
   ],
   endpoints: (builder) => ({}),
 });

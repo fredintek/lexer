@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentMethod } from '../entities/payment.entity';
 import { Repository } from 'typeorm';
 import { CreatePaymentMethodDto } from '../dtos/payment.dto';
 import { ActiveUserInterface } from 'src/lib/types';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class PaymentService {
@@ -13,12 +18,31 @@ export class PaymentService {
     private readonly paymentMethodRepo: Repository<PaymentMethod>,
 
     private readonly eventEmitter: EventEmitter2,
+
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
   ) {}
 
   public async findAll(currentUser: ActiveUserInterface) {
     return this.paymentMethodRepo.find({
       where: { user: { id: currentUser?.userId } },
       order: { isDefault: 'DESC' },
+    });
+  }
+
+  public async findByUserId(targetUserId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: targetUserId },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${targetUserId} not found`);
+    }
+
+    return this.paymentMethodRepo.find({
+      where: { user: { id: targetUserId } },
+      order: { isDefault: 'DESC', createdAt: 'DESC' },
+      // Useful for admin to see the user name/email in the response
+      relations: ['user'],
     });
   }
 

@@ -5,6 +5,7 @@ import {
   useCancelPositionMutation,
   useGetMyAssetsQuery,
 } from "@/lib/redux/services/positions.api";
+import { useGetTxHistoryQuery } from "@/lib/redux/services/transactions.api";
 import { useAppDispatch } from "@/lib/redux/store";
 import {
   ArrowDownRight,
@@ -15,9 +16,10 @@ import {
   Wallet,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
+import StatusBadge from "../StatusBadge";
 
 type Props = {};
 
@@ -27,8 +29,10 @@ const MobilePositions = (props: Props) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<any | null>(null);
   const { data: myAssets, isLoading } = useGetMyAssetsQuery(undefined);
+  const { data: txHistory, isLoading: isTxHistoryLoading } =
+    useGetTxHistoryQuery(undefined);
   const [activeTab, setActiveTab] = useState<
-    "open" | "waiting" | "closed" | "cancelled"
+    "open" | "sold" | "waiting" | "cancelled"
   >("open");
   const [cancelOrder, { isLoading: isOrderCancelling }] =
     useCancelPositionMutation();
@@ -41,6 +45,22 @@ const MobilePositions = (props: Props) => {
       toast.error(err?.data?.message || t("FAILED"));
     }
   };
+
+  // Determine the display data
+  const displayData = useMemo(() => {
+    if (activeTab === "sold") {
+      return (
+        txHistory?.filter(
+          (item: any) =>
+            item?.type === "SELL_PARTIAL" || item?.type === "SELL_FULL",
+        ) || []
+      );
+    }
+    return myAssets?.tables?.[activeTab] || [];
+  }, [activeTab, myAssets, txHistory]);
+
+  // Check if loading based on tab
+  const isDataLoading = activeTab === "sold" ? isTxHistoryLoading : isLoading;
 
   useEffect(() => {
     const socket = io(`${process.env.NEXT_PUBLIC_BASE_URL}/trade`);
@@ -119,129 +139,133 @@ const MobilePositions = (props: Props) => {
         {/* 2. MOBILE TABS (Matching Screenshot 2026-05-13 at 17.09.54.png) */}
         <div className="px-4 mb-4">
           <div className="flex gap-1 p-1 bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-xl overflow-x-auto scrollbar-none">
-            {(["open", "waiting", "closed", "cancelled"] as const).map(
-              (tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 min-w-20 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                    activeTab === tab
-                      ? "bg-brand text-white shadow-sm"
-                      : "text-slate-500 hover:text-slate-300"
-                  }`}
-                >
-                  {t(tab.toUpperCase())}
-                </button>
-              ),
-            )}
+            {(["open", "waiting", "cancelled"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`flex-1 min-w-20 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                  activeTab === tab
+                    ? "bg-brand text-white shadow-sm"
+                    : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {t(tab.toUpperCase())}
+              </button>
+            ))}
+            <button
+              onClick={() => setActiveTab("sold")}
+              className={`flex-1 min-w-20 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                activeTab === "sold"
+                  ? "bg-brand text-white shadow-sm"
+                  : "text-slate-500 hover:text-slate-300"
+              }`}
+            >
+              {t("SOLD")}
+            </button>
           </div>
         </div>
 
         {/* 3. ASSET LIST CONTAINER */}
         <div className="px-4 flex-1">
           <div className="bg-white dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
-            {isLoading ? (
+            {isDataLoading ? (
               <ActivitySkeleton />
-            ) : myAssets?.tables?.[activeTab]?.length === 0 ? (
+            ) : displayData.length === 0 ? (
               <div className="py-20 text-center">
                 <p className="text-xs font-black text-slate-600 uppercase tracking-widest">
                   {t("NO_DATA")}
                 </p>
               </div>
             ) : (
-              myAssets?.tables?.[activeTab]?.map((pos: any, i: number) => {
-                const isPositive = pos.livePnL >= 0;
+              displayData.map((pos: any, i: number) => {
+                // Sold items use livePnL (from service logic) or realizedPnL
+                const realizedPnL = pos.realizedPnL || pos.livePnL || 0;
+                const isPositive = realizedPnL >= 0;
+
+                // Define price to show: Entry for open, Execution Price for sold
+                const executionPrice =
+                  pos.priceAtExecution || pos.startingPrice;
+
                 return (
                   <div
-                    key={i}
+                    key={pos.id || i}
                     className={`flex items-center justify-between px-3 py-5 border-slate-200 dark:border-slate-800 transition-colors active:bg-white/5 ${
-                      i !== myAssets.tables[activeTab].length - 1
-                        ? "border-b"
-                        : ""
+                      i !== displayData.length - 1 ? "border-b" : ""
                     }`}
                   >
-                    {/* Left Side: Name, Type, and Details */}
                     <div className="flex flex-col gap-1">
-                      <div className="">
-                        {getLogoUrl(pos?.website) ? (
-                          <div className="flex items-center gap-1">
-                            <div className="w-6 h-6">
-                              <img
-                                src={getLogoUrl(pos?.website)}
-                                alt=""
-                                className="w-full h-full"
-                              />
-                            </div>
-
-                            <p className="capitalize">{pos?.symbol}</p>
-                          </div>
-                        ) : (
-                          <div className="text-white w-full h-full bg-brand/50 rounded-2xl flex items-center justify-center font-black">
-                            <p className="">{pos?.symbol}</p>
-                          </div>
-                        )}
+                      <div className="flex items-center gap-1">
+                        {/* Fallback for symbol/logo */}
+                        <p className="capitalize font-bold">{pos?.symbol}</p>
                       </div>
+
                       <p className="text-[10px] font-bold text-slate-500 uppercase">
-                        {Number(pos.lots).toFixed(2)} {t("LOTS")} · {t("ENTRY")}
-                        : ₺{formatCurrency(pos.startingPrice)}
+                        {Number(pos.lots).toFixed(2)} {t("LOTS")} ·{" "}
+                        {activeTab === "sold" ? t("EXIT") : t("ENTRY")}: ₺
+                        {formatCurrency(executionPrice)}
                       </p>
+
+                      <p className="text-[10px] font-bold text-slate-500 uppercase">
+                        {t("COST_PRICE")}: ₺
+                        {activeTab === "sold"
+                          ? formatCurrency(pos?.marginAmount)
+                          : formatCurrency(pos?.marginUsed)}
+                      </p>
+
                       <div className="flex items-center gap-2">
                         <div className="flex flex-col gap-1">
                           <p
                             className={`text-sm font-black leading-none ${isPositive ? "text-up" : "text-down"}`}
                           >
-                            {activeTab === "open"
-                              ? `${isPositive ? "+" : ""}₺${formatCurrency(pos.livePnL)}`
-                              : "—"}
+                            {/* For sold tab, we show the fixed realized PnL */}
+                            {isPositive ? "+" : ""}₺
+                            {formatCurrency(realizedPnL)}
                           </p>
-                          <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
-                            {pos.type}
-                          </p>
+                          {activeTab !== "sold" && (
+                            <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                              {pos.type}
+                            </p>
+                          )}
                         </div>
                         ·
-                        <p
-                          className={`text-[9px] font-black text-slate-500 uppercase tracking-widest`}
-                        >
-                          {t("COST_PRICE")}: ₺{formatCurrency(pos.marginUsed)}
+                        <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest">
+                          {t("DATE")}: {}
+                          {activeTab === "sold"
+                            ? formatDate(pos.createdAt)
+                            : formatDate(pos.openingDate)}
                         </p>
                       </div>
                     </div>
 
-                    {/* Right Side: PnL and Trade Type */}
-                    {pos.status === "open" && (
+                    {/* Right Side Actions */}
+                    {activeTab === "open" && pos.status === "open" && (
                       <button
                         onClick={() => {
                           setSelectedAsset(pos);
                           setIsModalOpen(true);
                         }}
-                        className="cursor-pointer px-4 py-2 bg-down text-white hover:bg-red-50 hover:text-red-600 rounded-lg text-[10px] font-black uppercase transition-all"
+                        className="cursor-pointer px-4 py-2 bg-down text-white hover:opacity-80 rounded-lg text-[10px] font-black uppercase transition-all"
                       >
                         <span>{t("SELL")}</span>
                       </button>
                     )}
 
-                    {pos.status === "waiting" && (
+                    {activeTab === "waiting" && (
                       <button
                         disabled={isOrderCancelling}
                         onClick={() => handleCancelOrder(pos.id)}
-                        className="cursor-pointer px-4 py-2 bg-down text-white hover:bg-red-50 hover:text-red-600 rounded-lg text-[10px] font-black uppercase transition-all"
+                        className="cursor-pointer px-4 py-2 bg-down text-white hover:opacity-80 rounded-lg text-[10px] font-black uppercase transition-all"
                       >
                         {isOrderCancelling ? (
                           <Loader size={16} className="animate-spin" />
                         ) : (
-                          <span>{t("CANCEL_ORDER")}</span>
+                          <span>{t("CANCEL")}</span>
                         )}
                       </button>
                     )}
 
-                    {pos.status === "closed" && (
-                      <p
-                        className={`text-[9px] font-black text-slate-500 uppercase tracking-widest flex flex-col gap-1`}
-                      >
-                        <span>{t("DATE")}:</span>
-                        <span>{formatDate(pos.closingDate)}</span>
-                      </p>
-                    )}
+                    {/* Sold Tag */}
+                    {activeTab === "sold" && <StatusBadge status="COMPLETED" />}
                   </div>
                 );
               })

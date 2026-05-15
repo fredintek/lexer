@@ -469,5 +469,12 @@
   "TOKEN_PLACEHOLDER": "Enter Token...",
   "UPDATE_PASSWORD": "Update Password",
   "CANCEL_RETURN_LOGIN": "Cancel and return to login",
-  "PASSWORD": "Password"
+  "PASSWORD": "Password",
+  "BUY_OPEN": "Buy Open",
+  "BUY_WAITING": "Limit Buy",
+  "BUY_MERGE": "Position Merge",
+  "SELL_FULL": "Full Sale",
+  "SELL_PARTIAL": "Partial Sale",
+  "DEPOSIT": "Deposit",
+  "WITHDRAWAL": "Withdrawal"
 }
