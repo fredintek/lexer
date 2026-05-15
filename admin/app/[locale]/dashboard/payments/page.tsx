@@ -35,7 +35,7 @@ import {
   useGetTxStatsQuery,
   useRejectTransactionMutation,
 } from "@/lib/redux/services/wallet.api";
-import { formatCurrency } from "@/lib/helpers";
+import { formatCurrency, formatDate, formatFullTimestamp } from "@/lib/helpers";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTranslations } from "next-intl";
 import { useGetPaymentMethodsByUserIdQuery } from "@/lib/redux/services/payment.api";
@@ -199,6 +199,15 @@ export default function PaymentsControlPage() {
     {
       header: t("STATUS"),
       render: (tx) => <StatusBadge status={tx.status} />,
+    },
+    {
+      header: t("DATE"),
+      render: (tx) => (
+        <div className="text-xs font-black text-fg tracking-tight">
+          {formatFullTimestamp(tx.createdAt).datePart},{" "}
+          {formatFullTimestamp(tx.createdAt).timePart}
+        </div>
+      ),
     },
     {
       header: t("ACTIONS"),
@@ -500,6 +509,9 @@ export default function PaymentsControlPage() {
               <div className="space-y-3">
                 <h4 className="text-[10px] font-black uppercase text-orange-500 border-b border-orange-100 dark:border-orange-900/30 pb-2 flex items-center gap-2">
                   <CreditCard size={14} /> {t("PAYOUT_DESTINATION")}
+                  {" | "}
+                  {formatFullTimestamp(selectedTx?.createdAt).datePart},
+                  {formatFullTimestamp(selectedTx?.createdAt).timePart}
                 </h4>
                 <div className="p-5 bg-orange-50/50 dark:bg-orange-950/10 border border-orange-100 dark:border-orange-900/30 rounded-3xl">
                   <div className="flex justify-between items-start mb-4">
