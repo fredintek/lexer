@@ -1,6 +1,7 @@
 "use client";
-import MobileHome from "@/components/screens/MobileHome";
-import TradeSection from "./trade/_ui/TradeSection";
+
+import DesktopTrade from "@/components/screens/DesktopTrade";
+import MobileTrade from "@/components/screens/MobileTrade";
 
 type Props = {};
 
@@ -8,10 +9,10 @@ const page = (props: Props) => {
   return (
     <div>
       {/* MOBILE */}
-      <MobileHome />
+      <MobileTrade />
 
       {/* DESKTOP */}
-      <TradeSection />
+      <DesktopTrade />
     </div>
   );
 };
