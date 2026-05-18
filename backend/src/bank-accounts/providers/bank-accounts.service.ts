@@ -37,22 +37,11 @@ export class BankAccountsService {
     return this.repo.find({ order: { createdAt: 'DESC' } });
   }
 
-  public async update(
-    id: string,
-    updateBankAccountDto: UpdateBankAccountDto,
-    currentUser: ActiveUserInterface,
-  ) {
+  public async update(id: string, updateBankAccountDto: UpdateBankAccountDto) {
     const account = await this.repo.preload({ id, ...updateBankAccountDto });
     if (!account) throw new NotFoundException('Account not found');
 
     await this.repo.save(account);
-
-    // Emit the event (This is non-blocking!)
-    this.eventEmitter.emit('user.activity', {
-      userId: currentUser.userId,
-      type: 'SYSTEM',
-      description: 'Account updated',
-    });
     return { message: 'Account updated successfully' };
   }
 

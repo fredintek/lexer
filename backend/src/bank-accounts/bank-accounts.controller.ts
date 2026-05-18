@@ -38,9 +38,8 @@ export class BankAccountsController {
   update(
     @Param('id') id: string,
     @Body() updateBankAccountDto: UpdateBankAccountDto,
-    @ActiveUser() currentUser: ActiveUserInterface,
   ) {
-    return this.service.update(id, updateBankAccountDto, currentUser);
+    return this.service.update(id, updateBankAccountDto);
   }
 
   @Delete(':id')
