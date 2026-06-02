@@ -56,7 +56,7 @@ const DesktopMarkets = () => {
         exchange: stock.exchange,
       }),
     );
-    router.push("/");
+    router.push("/trade");
   };
 
   const columns: Column<any>[] = useMemo(

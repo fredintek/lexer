@@ -15,7 +15,6 @@ const BottomNavbar = (props: Props) => {
   const t = useTranslations();
   const pathname = usePathname();
 
-  console.log("pathname", pathname);
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-bg border-t border-slate-200 dark:border-slate-800 flex">
       {/* Home */}

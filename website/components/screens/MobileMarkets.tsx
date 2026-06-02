@@ -53,7 +53,7 @@ const MobileMarkets = (props: Props) => {
         exchange: stock.exchange,
       }),
     );
-    router.push("/");
+    router.push("/trade");
   };
 
   const filteredData = useMemo(() => {

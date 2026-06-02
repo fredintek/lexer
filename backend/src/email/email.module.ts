@@ -28,7 +28,7 @@ import { MailtrapTransport } from 'mailtrap';
             {
               host: configService.get<string>('mail.host'),
               port: Number(configService.get<string>('mail.port')),
-              secure: env === 'production',
+              secure: false,
               auth: {
                 user: configService.get<string>('mail.user'),
                 pass: configService.get<string>('mail.pass'),

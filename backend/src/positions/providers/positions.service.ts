@@ -115,7 +115,7 @@ export class PositionsService {
           multiplier: createPositionDto.multiplier || 1,
           marginUsed: requiredMargin,
           status: isMarketOpen ? PositionStatus.OPEN : PositionStatus.WAITING,
-          website: stockData?.assetProfile?.website,
+          website: stockData?.assetProfile?.website ?? '',
           displayLot: createPositionDto.lots,
           displayCost: currentPrice,
           openingDate: new Date(),
