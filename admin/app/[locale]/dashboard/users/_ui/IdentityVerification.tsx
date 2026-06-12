@@ -38,6 +38,13 @@ export default function IdentityVerification({ userId }: Props) {
 
   const kyc = user?.kyc;
 
+  const kycFrontImg = kyc?.front?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${kyc?.front?.url}`
+    : null;
+  const kycBackImg = kyc?.back?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${kyc?.back?.url}`
+    : null;
+
   const handleStatusUpdate = async (status: "APPROVED" | "REJECTED") => {
     if (status === "REJECTED" && !rejectReason) {
       toast.error(t("PLEASE_PROVIDE_REASON"));
@@ -100,8 +107,8 @@ export default function IdentityVerification({ userId }: Props) {
   }
 
   const documents = [
-    { label: t("FRONT_SIDE"), url: kyc.front?.url },
-    { label: t("BACK_SIDE"), url: kyc.back?.url },
+    { label: t("FRONT_SIDE"), url: kycFrontImg },
+    { label: t("BACK_SIDE"), url: kycBackImg },
   ];
 
   return (

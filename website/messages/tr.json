@@ -507,5 +507,10 @@
   "HOME": "Ana Sayfa",
   "TRADES": "Ticaret",
   "SOLD": "Satılmış",
-  "EXIT": "Çıkış"
+  "EXIT": "Çıkış",
+
+  "PHONE_NUMBER_LABEL": "Telefon Numarası",
+  "PHONE_NUMBER_PLACEHOLDER": "5XX XXX XX XX",
+  "PHONE_NUMBER_HINT": "Başında 0 olmadan 10 haneli cep numaranızı girin",
+  "INVALID_PHONE_NUMBER": "Telefon numarası 10 haneli olmalıdır"
 }

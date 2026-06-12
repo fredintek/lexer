@@ -11,7 +11,6 @@ import {
   UpdateKYCStatusDto,
 } from '../dtos';
 import { ActiveUserInterface } from 'src/lib/types';
-import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 import { KYC_FOLDER } from 'src/lib/constants';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Kyc } from '../entities/kyc.entity';
@@ -23,16 +22,26 @@ import {
   Repository,
 } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { FileUploadProvider } from 'src/common/providers/FileUploader';
+
+export interface KycUploadPayload {
+  frontBuffer: Buffer<ArrayBufferLike>;
+  backBuffer: Buffer<ArrayBufferLike>;
+  frontMime: string;
+  backMime: string;
+  email: string;
+}
 
 @Injectable()
 export class KycService {
   constructor(
-    private readonly cloudinaryService: CloudinaryService,
     private readonly dataSource: DataSource,
     @InjectRepository(Kyc)
     private readonly kycRepository: Repository<Kyc>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    private readonly fileUploader: FileUploadProvider,
   ) {}
 
   public async findAllRequests(getKycQueryDto: GetKycQueryDto) {
@@ -95,15 +104,14 @@ export class KycService {
       }
     }
 
-    // 3. Upload new images (Cloudinary)
-    const uploadedFront = await this.cloudinaryService.uploadImage(
-      front,
-      KYC_FOLDER,
-    );
-    const uploadedBack = await this.cloudinaryService.uploadImage(
-      back,
-      KYC_FOLDER,
-    );
+    // 3. Upload new images
+    const results = await this.processUploadKyc({
+      backBuffer: back.buffer,
+      frontBuffer: front.buffer,
+      backMime: back.mimetype,
+      frontMime: front.mimetype,
+      email: targetUser?.email,
+    });
 
     // 4. Update existing or create new
     let kycInstance = targetUser.kyc;
@@ -113,12 +121,12 @@ export class KycService {
       kycInstance.documentType = createKycDto.documentType;
       kycInstance.country = createKycDto.country;
       kycInstance.front = {
-        url: uploadedFront.secure_url,
-        publicId: uploadedFront.public_id,
+        url: results.frontResult.url,
+        publicId: results.frontResult.publicId,
       };
       kycInstance.back = {
-        url: uploadedBack.secure_url,
-        publicId: uploadedBack.public_id,
+        url: results.backResult.url,
+        publicId: results.backResult.publicId,
       };
       kycInstance.status = KYCStatus.PENDING;
       kycInstance.rejectionReason = undefined;
@@ -127,12 +135,12 @@ export class KycService {
       kycInstance = this.kycRepository.create({
         ...createKycDto,
         front: {
-          url: uploadedFront.secure_url,
-          publicId: uploadedFront.public_id,
+          url: results.frontResult.url,
+          publicId: results.frontResult.publicId,
         },
         back: {
-          url: uploadedBack.secure_url,
-          publicId: uploadedBack.public_id,
+          url: results.backResult.url,
+          publicId: results.backResult.publicId,
         },
         status: KYCStatus.PENDING,
         user: targetUser,
@@ -229,5 +237,34 @@ export class KycService {
       // Crucial: always release the runner
       await queryRunner.release();
     }
+  }
+
+  private async processUploadKyc(data: KycUploadPayload) {
+    const { frontBuffer, backBuffer, frontMime, backMime, email } = data;
+
+    // Convert arrays back to Buffers
+    const front = Buffer.from(frontBuffer);
+    const back = Buffer.from(backBuffer);
+
+    // Step 3 — Upload both images
+    const [frontResult, backResult] = await Promise.all([
+      this.fileUploader.uploadBuffer(
+        front,
+        'kyc',
+        `kyc_front_${email}`,
+        frontMime,
+      ),
+      this.fileUploader.uploadBuffer(
+        back,
+        `kyc`,
+        `kyc_back_${email}`,
+        backMime,
+      ),
+    ]);
+
+    return {
+      frontResult,
+      backResult,
+    };
   }
 }

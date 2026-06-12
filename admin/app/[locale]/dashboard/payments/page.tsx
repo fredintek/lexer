@@ -14,7 +14,6 @@ import {
   Loader2,
   Trash2,
   Plus,
-  Phone,
   Mail,
   PhoneCall,
 } from "lucide-react";
@@ -582,7 +581,7 @@ export default function PaymentsControlPage() {
                   {t("PROOF_TRANSFER")}
                 </h4>
                 <a
-                  href={selectedTx?.receipt?.url}
+                  href={`${process.env.NEXT_PUBLIC_BASE_URL}${selectedTx?.receipt?.url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center justify-between p-4 bg-slate-900 dark:bg-slate-100 rounded-2xl hover:scale-[1.02] transition-all"

@@ -48,6 +48,10 @@ export default function AdminProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const avatar = currentUser?.avatar?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${currentUser?.avatar?.url}`
+    : null;
+
   // Handle Avatar Upload
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -115,9 +119,9 @@ export default function AdminProfile() {
         <div className="absolute -bottom-10 left-8 flex items-end gap-6">
           <div className="relative">
             <div className="h-32 w-32 rounded-[2.5rem] bg-bg border-8 border-bg shadow-2xl flex items-center justify-center overflow-hidden relative group/avatar">
-              {currentUser?.avatar?.url ? (
+              {avatar ? (
                 <img
-                  src={currentUser?.avatar?.url}
+                  src={avatar}
                   alt="Avatar"
                   className="h-full w-full object-cover"
                 />

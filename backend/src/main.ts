@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ConfigService } from '@nestjs/config';
 import * as express from 'express';
+import * as fs from 'fs';
+import * as path from 'path';
 import cookieParser from 'cookie-parser';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 
@@ -10,8 +12,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const configService = app.get(ConfigService);
 
-  const origins = configService.get('app.frontend_origins').split(',')
-  
+  const origins = configService.get('app.frontend_origins').split(',');
+
   app.enableCors({
     origin: origins,
     credentials: true,
@@ -19,6 +21,12 @@ async function bootstrap() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
+
+  const uploadDir = path.join(process.cwd(), 'uploads');
+
+  // Ensure directory exists on startup
+  fs.mkdirSync(uploadDir, { recursive: true });
+  app.useStaticAssets(uploadDir, { prefix: '/uploads' });
 
   // configure app validation pipes
   app.useGlobalPipes(

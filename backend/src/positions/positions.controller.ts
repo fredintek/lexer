@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { PositionsService } from './providers/positions.service';
 import { ActiveUser } from 'src/auth/decorators/activeUser.decorator';
 import { ActiveUserInterface } from 'src/lib/types';
@@ -86,5 +94,13 @@ export class PositionsController {
       positionId,
       editUserPositionDto,
     );
+  }
+
+  @Delete(':userId/:positionId')
+  deletePosition(
+    @Param('userId') userId: string,
+    @Param('positionId') positionId: string,
+  ) {
+    return this.positionsService.deletePosition(userId, positionId);
   }
 }

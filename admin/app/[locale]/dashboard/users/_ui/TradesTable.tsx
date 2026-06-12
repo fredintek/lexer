@@ -93,25 +93,6 @@ const TradesTable = ({ trades }: Props) => {
       header: t("STATUS"),
       render: (trade) => <StatusBadge status={trade.status} />,
     },
-    // {
-    //   header: "Actions",
-    //   render: (trade) => (
-    //     <div className="flex justify-end gap-2">
-    //       <button
-    //         onClick={() => console.log("Admin Edit", trade.id)}
-    //         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-brand transition-colors"
-    //       >
-    //         <Edit size={14} />
-    //       </button>
-    //       <button
-    //         onClick={() => console.log("Admin Delete", trade.id)}
-    //         className="p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-500 transition-colors"
-    //       >
-    //         <Trash2 size={14} />
-    //       </button>
-    //     </div>
-    //   ),
-    // },
   ];
 
   return (

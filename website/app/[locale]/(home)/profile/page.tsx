@@ -1,8 +1,6 @@
 "use client";
-
 import DesktopProfile from "@/components/screens/DesktopProfile";
 import MobileProfile from "@/components/screens/MobileProfile";
-import React from "react";
 
 type Props = {};
 

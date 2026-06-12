@@ -532,4 +532,65 @@ export class PositionsService {
       date: p.openingDate,
     }));
   }
+
+  public async deletePosition(userId: string, positionId: string) {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      const position = await queryRunner.manager.findOne(Positions, {
+        where: { id: positionId, user: { id: userId } },
+        relations: ['user'],
+      });
+
+      if (!position) throw new NotFoundException('Position not found');
+
+      const user = position.user;
+      const refundAmount = Number(position.marginUsed);
+
+      // Refund margin if position still has locked funds (OPEN or WAITING)
+      if (
+        refundAmount > 0 &&
+        (position.status === PositionStatus.OPEN ||
+          position.status === PositionStatus.WAITING)
+      ) {
+        const balanceBefore = Number(user.balance);
+        user.balance = balanceBefore + refundAmount;
+
+        await queryRunner.manager.save(user);
+
+        const tx = queryRunner.manager.create(Transactions, {
+          type: TransactionType.CANCEL,
+          symbol: position.symbol,
+          lots: Number(position.lots),
+          priceAtExecution: Number(position.startingPrice),
+          marginAmount: refundAmount,
+          realizedPnL: 0,
+          commission: 0,
+          balanceBefore,
+          balanceAfter: Number(user.balance),
+          notes: `Position force-deleted by admin. ₺${refundAmount.toLocaleString('tr-TR')} refunded.`,
+          user,
+          position,
+        });
+
+        await queryRunner.manager.save(tx);
+      }
+
+      await queryRunner.manager.remove(position);
+      await queryRunner.commitTransaction();
+
+      return {
+        success: true,
+        message: `Position deleted${refundAmount > 0 ? ` and ₺${refundAmount.toLocaleString('tr-TR')} refunded` : ''}.`,
+        newBalance: Number(user.balance),
+      };
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
+  }
 }

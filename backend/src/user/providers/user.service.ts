@@ -11,9 +11,7 @@ import {
 import { User, UserStatus } from '../entities/user.entity';
 import { In, Like, Not, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 import { ActiveUserInterface } from 'src/lib/types';
-import { AVATAR_FOLDER } from 'src/lib/constants';
 import {
   CreateUserAdminDto,
   GetUsersQueryDto,
@@ -31,6 +29,7 @@ import {
   Transactions,
   TransactionStatus,
 } from 'src/transactions/entities/transactions.entity';
+import { FileUploadProvider } from 'src/common/providers/FileUploader';
 
 @Injectable()
 export class UserService {
@@ -44,10 +43,7 @@ export class UserService {
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
 
-    /**
-     * Injecting Cloudinary Service
-     */
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly fileUploader: FileUploadProvider,
 
     @Inject(forwardRef(() => AuthService))
     private readonly authService: AuthService,
@@ -100,23 +96,23 @@ export class UserService {
     const oldAvatar = targetUser.avatar?.publicId;
 
     // upload new avatar
-    const result = await this.cloudinaryService.uploadImage(
-      file,
-      AVATAR_FOLDER,
+    const result = await this.fileUploader.uploadBuffer(
+      file.buffer,
+      'avatar',
+      `avatar_${targetUser?.email}`,
+      file.mimetype,
     );
 
     // update DB with new data
     await this.userRepository.update(targetUser.id, {
-      avatar: { publicId: result.public_id, url: result.secure_url },
+      avatar: { publicId: result.publicId, url: result.url },
     });
 
     // delete old avatar
     if (oldAvatar) {
-      await this.cloudinaryService
-        .deleteFile(oldAvatar as string)
-        .catch((err) => {
-          console.error('Cloudinary Cleanup Failed:', err);
-        });
+      await this.fileUploader.deleteImage(oldAvatar as string).catch((err) => {
+        console.error('Delete avatar cleanup failed:', err);
+      });
     }
 
     // Emit the event (This is non-blocking!)
@@ -126,7 +122,7 @@ export class UserService {
       description: 'Avatar chnaged',
     });
 
-    return { url: result.secure_url, publicId: result.public_id };
+    return { url: result.url, publicId: result.publicId };
   }
 
   public async findById(id: string): Promise<User> {

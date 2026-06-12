@@ -39,6 +39,14 @@ export class RegisterDto {
   @Transform(({ value }) => value.trim().toLowerCase(), { toClassOnly: true })
   fullname!: string;
 
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\+90[5][0-9]{9}$/, {
+    message:
+      'Phone number must be a valid Turkish mobile number e.g. +905551234567',
+  })
+  phoneNumber!: string;
+
   @IsEmail()
   @IsNotEmpty()
   @Transform(({ value }) => value.trim().toLowerCase(), { toClassOnly: true })

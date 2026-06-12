@@ -168,42 +168,50 @@ const UsersPage = () => {
                 </p>
               ) : (
                 <div className="flex flex-col gap-1">
-                  {onlineUsers?.map((user: any) => (
-                    <Link
-                      key={user.id}
-                      href={
-                        currentUser?.id === user?.id
-                          ? "/dashboard/profile"
-                          : `/dashboard/users/${user?.id}`
-                      }
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                    >
-                      <div className="relative">
-                        <div className="w-10 h-10">
-                          {getLogoUrl(user?.avatar?.url) ? (
-                            <img
-                              src={getLogoUrl(user?.avatar?.url)}
-                              alt=""
-                              className="w-full h-full"
-                            />
-                          ) : (
-                            <div className="text-white w-full h-full bg-brand/50 rounded-2xl flex items-center justify-center font-black">
-                              <p className="">{user?.fullname?.slice(0, 2)}</p>
-                            </div>
-                          )}
+                  {onlineUsers?.map((user: any) => {
+                    const avatar = user?.avatar?.url
+                      ? `${process.env.NEXT_PUBLIC_BASE_URL}${user?.avatar?.url}`
+                      : null;
+
+                    return (
+                      <Link
+                        key={user.id}
+                        href={
+                          currentUser?.id === user?.id
+                            ? "/dashboard/profile"
+                            : `/dashboard/users/${user?.id}`
+                        }
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        <div className="relative">
+                          <div className="w-10 h-10">
+                            {getLogoUrl(avatar as string) ? (
+                              <img
+                                src={getLogoUrl(avatar as string)}
+                                alt=""
+                                className="w-full h-full"
+                              />
+                            ) : (
+                              <div className="text-white w-full h-full bg-brand/50 rounded-2xl flex items-center justify-center font-black">
+                                <p className="">
+                                  {user?.fullname?.slice(0, 2)}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                         </div>
-                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-bold text-fg">
-                          {user?.fullname}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          {user.email}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
+                        <div className="flex flex-col">
+                          <span className="text-sm font-bold text-fg">
+                            {user?.fullname}
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            {user.email}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

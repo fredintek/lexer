@@ -476,5 +476,10 @@
   "SELL_FULL": "Tam Satış",
   "SELL_PARTIAL": "Parçalı Satış",
   "DEPOSIT": "Yatırma",
-  "WITHDRAWAL": "Çekme"
+  "WITHDRAWAL": "Çekme",
+
+  "CONFIRM_DELETE": "Bu pozisyonu silmek istediğinize emin misiniz?",
+  "DELETE_SUCCESS": "Pozisyon başarıyla silindi",
+  "DELETE_FAILED": "Pozisyon silinemedi",
+  "DELETE": "Sil"
 }

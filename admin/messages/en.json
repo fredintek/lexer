@@ -476,5 +476,10 @@
   "SELL_FULL": "Full Sale",
   "SELL_PARTIAL": "Partial Sale",
   "DEPOSIT": "Deposit",
-  "WITHDRAWAL": "Withdrawal"
+  "WITHDRAWAL": "Withdrawal",
+
+  "CONFIRM_DELETE": "Are you sure you want to delete this position?",
+  "DELETE_SUCCESS": "Position deleted successfully",
+  "DELETE_FAILED": "Failed to delete position",
+  "DELETE": "Delete"
 }

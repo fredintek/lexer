@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Edit3, Search, ShieldAlert, X, Info, Eye } from "lucide-react";
+import { Search, X, Info, Eye, Trash2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import {
+  useDeletePositionMutation,
   useEditUserPositionMutation,
   useGetUserPositionsQuery,
 } from "@/lib/redux/services/position.api";
@@ -25,6 +26,9 @@ const FinanceHub = ({ userId }: { userId: string }) => {
   const { data: portfolio, isLoading } = useGetUserPositionsQuery(userId);
   const [updatePosition, { isLoading: isUpdating }] =
     useEditUserPositionMutation();
+
+  const [deletePosition, { isLoading: isDeleting }] =
+    useDeletePositionMutation();
 
   // Search Logic
   const filteredData = useMemo(() => {
@@ -58,6 +62,19 @@ const FinanceHub = ({ userId }: { userId: string }) => {
       setIsModalOpen(false);
     } catch (err) {
       toast.error(t("UPDATE_FAILED"));
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deletePosition({
+        userId,
+        positionId: selectedPosition.id,
+      }).unwrap();
+      toast.success(t("DELETE_SUCCESS"));
+      setIsModalOpen(false);
+    } catch (err) {
+      toast.error(t("DELETE_FAILED"));
     }
   };
 
@@ -250,23 +267,40 @@ const FinanceHub = ({ userId }: { userId: string }) => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex justify-between gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+            {/* Delete — left side */}
             <button
-              onClick={() => setIsModalOpen(false)}
-              className="cursor-pointer px-6 py-3 text-xs font-bold text-slate-500 hover:text-slate-700 transition-all"
+              disabled={isDeleting}
+              onClick={handleDelete}
+              className="cursor-pointer px-6 py-3 bg-red-500 text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2"
             >
-              {t("CANCEL")}
-            </button>
-            <button
-              disabled={isUpdating}
-              onClick={handleSave}
-              className="cursor-pointer px-6 py-3 bg-brand text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2"
-            >
-              {isUpdating ? (
+              {isDeleting ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : null}
-              {t("SAVE_CHANGES")}
+              ) : (
+                <Trash2 size={14} />
+              )}
+              {t("DELETE")}
             </button>
+
+            {/* Cancel + Save — right side */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="cursor-pointer px-6 py-3 text-xs font-bold text-slate-500 hover:text-slate-700 transition-all"
+              >
+                {t("CANCEL")}
+              </button>
+              <button
+                disabled={isUpdating}
+                onClick={handleSave}
+                className="cursor-pointer px-6 py-3 bg-brand text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all flex items-center gap-2"
+              >
+                {isUpdating ? (
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : null}
+                {t("SAVE_CHANGES")}
+              </button>
+            </div>
           </div>
         </div>
       </Modal>

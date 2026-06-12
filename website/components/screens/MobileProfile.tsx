@@ -30,6 +30,10 @@ export default function MobileProfile() {
   const activeSection = searchParams.get("view");
   const { data: user } = useGetMeQuery(undefined);
 
+  const avatar = user?.avatar?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${user?.avatar?.url}`
+    : null;
+
   const [updateAvatar, { isLoading: isUpdating }] = useUpdateAvatarMutation();
 
   const handleNavigation = (viewName: string) => {
@@ -95,9 +99,9 @@ export default function MobileProfile() {
               className={`h-16 w-16 rounded-2xl bg-linear-to-tr from-brand to-up p-0.5 transition-opacity ${isUpdating ? "opacity-50" : "opacity-100"}`}
             >
               <div className="h-full w-full rounded-[14px] bg-bg flex items-center justify-center overflow-hidden">
-                {user?.avatar?.url ? (
+                {avatar ? (
                   <img
-                    src={user.avatar.url}
+                    src={avatar}
                     alt="Profile"
                     className="h-full w-full object-cover"
                   />
@@ -125,6 +129,11 @@ export default function MobileProfile() {
           <p className="text-slate-400 text-[10px] font-bold uppercase mt-1 tracking-tighter truncate">
             {user?.email}
           </p>
+          {user?.phoneNumber && (
+            <p className="text-slate-400 text-[10px] font-bold uppercase mt-1 tracking-tighter truncate">
+              {user?.phoneNumber}
+            </p>
+          )}
           <div className="flex gap-2 mt-2">
             <span className="px-2 py-0.5 bg-brand/10 text-brand text-[8px] font-black uppercase rounded-md border border-brand/20">
               {user?.tag}

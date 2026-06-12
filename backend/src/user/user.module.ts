@@ -7,7 +7,6 @@ import { User } from './entities/user.entity';
 import { SeedService } from './providers/seed.service';
 import { LoginHistory } from './entities/login-history.entity';
 import { RefreshToken } from './entities/refresh-tokens.entity';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { PaymentMethod } from 'src/payment/entities/payment.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
 import { Kyc } from 'src/kyc/entities/kyc.entity';
@@ -18,12 +17,14 @@ import { BcryptProvider } from 'src/auth/providers/bcrypt.provider';
 import { UserGateWay } from './gateway/user.gateway';
 import { Positions } from 'src/positions/entities/position.entity';
 import { Transactions } from 'src/transactions/entities/transactions.entity';
+import { FileUploadProvider } from 'src/common/providers/FileUploader';
 
 @Module({
   controllers: [UserController],
   providers: [
     UserService,
     SeedService,
+    FileUploadProvider,
     {
       provide: HashingProvider,
       useClass: BcryptProvider,
@@ -42,8 +43,6 @@ import { Transactions } from 'src/transactions/entities/transactions.entity';
       Kyc,
       Positions,
     ]),
-
-    CloudinaryModule,
     forwardRef(() => AuthModule),
     EmailModule,
   ],

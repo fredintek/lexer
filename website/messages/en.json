@@ -507,5 +507,9 @@
   "HOME": "Home",
   "TRADES": "Trades",
   "SOLD": "Sold",
-  "EXIT": "Exit"
+  "EXIT": "Exit",
+  "PHONE_NUMBER_LABEL": "Phone Number",
+  "PHONE_NUMBER_PLACEHOLDER": "5XX XXX XX XX",
+  "PHONE_NUMBER_HINT": "Enter your 10-digit mobile number without the leading 0",
+  "INVALID_PHONE_NUMBER": "Phone number must be 10 digits"
 }

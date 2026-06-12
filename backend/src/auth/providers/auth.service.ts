@@ -157,6 +157,7 @@ export class AuthService {
         email: registerDto.email,
         password: hashedPassword,
         identificationNumber: registerDto?.identificationNumber,
+        phoneNumber: registerDto.phoneNumber,
         tag,
         role: traderRole as Role,
       });

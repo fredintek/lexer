@@ -9,7 +9,6 @@ import {
   Search,
   Loader2,
   Fingerprint,
-  TimerReset,
   RotateCcw,
 } from "lucide-react";
 import DataTable, { Column } from "@/components/dataTable/DataTable";

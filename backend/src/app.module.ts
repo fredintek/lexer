@@ -55,15 +55,10 @@ import { TransactionsModule } from './transactions/transactions.module';
           database: config.get<string>('db.name'),
           autoLoadEntities: true,
           synchronize: false,
-          migrationsRun: true,
+          migrationsRun: false,
           migrations: isProduction
             ? ['dist/database/migrations/*.js']
             : [path.join(__dirname, '../database/migrations/*.ts')],
-          // migrations: ['dist/database/migrations/*.js'],
-          timezone: 'Z',
-          charset: 'utf8mb4',
-          collation: 'utf8mb4_unicode_ci',
-          logging: false,
         };
       },
     }),

@@ -38,6 +38,10 @@ export default function OverviewSection({
   const [form] = Form.useForm();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const avatar = user?.avatar?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${user?.avatar?.url}`
+    : null;
+
   const [
     updateAvatar,
     {
@@ -107,9 +111,9 @@ export default function OverviewSection({
               className={`h-24 w-24 rounded-full bg-linear-to-tr from-brand to-up p-1 transition-opacity ${isUpdating ? "opacity-50" : "opacity-100"}`}
             >
               <div className="h-full w-full rounded-full bg-bg flex items-center justify-center overflow-hidden">
-                {user?.avatar?.url ? (
+                {avatar ? (
                   <img
-                    src={user.avatar.url}
+                    src={avatar}
                     alt="Profile"
                     className="h-full w-full object-cover"
                   />

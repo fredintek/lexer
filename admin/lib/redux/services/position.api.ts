@@ -22,6 +22,16 @@ export const postionApi = lexerApi.injectEndpoints({
       }),
       invalidatesTags: ["POSITIONS"],
     }),
+    deletePosition: builder.mutation<
+      any,
+      { userId: string; positionId: string }
+    >({
+      query: ({ userId, positionId }) => ({
+        url: `positions/${userId}/${positionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["POSITIONS"],
+    }),
   }),
 });
 
@@ -29,4 +39,5 @@ export const {
   useGetAllPositionsQuery,
   useEditUserPositionMutation,
   useGetUserPositionsQuery,
+  useDeletePositionMutation,
 } = postionApi;

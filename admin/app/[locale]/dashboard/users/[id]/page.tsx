@@ -32,6 +32,10 @@ export default function UserDetailsPage() {
     router.push(`?tab=${tabId}`, { scroll: false });
   };
 
+  const avatar = user?.avatar?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${user?.avatar?.url}`
+    : null;
+
   useEffect(() => {
     if (tabFromUrl && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
@@ -56,9 +60,9 @@ export default function UserDetailsPage() {
         <div className="flex flex-wrap items-center gap-6">
           {/* Avatar/Initials */}
           <div className="h-20 w-20 rounded-2xl overflow-hidden shadow-sm shrink-0">
-            {user?.avatar?.url ? (
+            {avatar ? (
               <img
-                src={user.avatar?.url}
+                src={avatar}
                 alt={user.fullname}
                 className="h-full w-full object-cover rounded-2xl"
               />

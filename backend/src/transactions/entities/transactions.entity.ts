@@ -1,6 +1,6 @@
 import { PaymentMethod } from 'src/payment/entities/payment.entity';
 import { Positions } from 'src/positions/entities/position.entity';
-import { User } from 'src/user/entities/user.entity';
+import { IAvatar, User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
@@ -85,6 +85,12 @@ export class Transactions {
     default: TransactionStatus.COMPLETED, // Trading txs are instant
   })
   status!: TransactionStatus;
+
+  @Column({
+    type: 'simple-json',
+    nullable: true,
+  })
+  receipt?: IAvatar | null;
 
   @Column({ nullable: true })
   adminNote!: string;

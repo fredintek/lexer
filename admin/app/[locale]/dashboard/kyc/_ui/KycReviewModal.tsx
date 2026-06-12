@@ -32,6 +32,10 @@ export default function KYCReviewModal({
   const [rejectionReason, setRejectionReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
 
+  const avatar = request?.user?.avatar?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${request?.user?.avatar?.url}`
+    : null;
+
   if (!request) return null;
 
   const handleRejectConfirm = () => {
@@ -55,9 +59,9 @@ export default function KYCReviewModal({
       <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-bg rounded-t-3xl">
         <div className="flex items-center gap-4">
           <div className="h-12 w-12 rounded-2xl bg-brand/10 text-brand flex items-center justify-center">
-            {request?.user?.avatar?.url ? (
+            {avatar ? (
               <img
-                src={request?.user?.avatar?.url}
+                src={avatar}
                 alt="user-avatar"
                 className="w-full h-full object-cover rounded-2xl"
               />

@@ -51,6 +51,10 @@ export default function ChatPage() {
     [rooms, selectedRoomId],
   );
 
+  const avatar = activeRoom?.user?.avatar?.url
+    ? `${process.env.NEXT_PUBLIC_BASE_URL}${activeRoom?.user?.avatar?.url}`
+    : null;
+
   const filteredRooms = useMemo(() => {
     if (!rooms) return [];
 
@@ -304,9 +308,9 @@ export default function ChatPage() {
           <div className="bg-bg border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="h-20 w-20 rounded-3xl bg-brand/10 text-brand flex items-center justify-center">
-                {activeRoom?.user?.avatar?.url ? (
+                {avatar ? (
                   <img
-                    src={activeRoom?.user?.avatar?.url}
+                    src={avatar}
                     alt="user-avatar"
                     className="w-full h-full object-cover rounded-3xl"
                   />

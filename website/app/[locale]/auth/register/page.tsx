@@ -29,8 +29,14 @@ export default function RegisterPage() {
 
     // 1. Extract Data
     const formData = new FormData(e.currentTarget);
-    const { fullname, email, identificationNumber, password, confirmPassword } =
-      Object.fromEntries(formData.entries()) as Record<string, string>;
+    const {
+      fullname,
+      email,
+      identificationNumber,
+      password,
+      confirmPassword,
+      phoneNumber,
+    } = Object.fromEntries(formData.entries()) as Record<string, string>;
 
     // 2. Check for Empty Fields (Basic validation)
     if (
@@ -38,11 +44,17 @@ export default function RegisterPage() {
       !email ||
       !identificationNumber ||
       !password ||
-      !confirmPassword
+      !confirmPassword ||
+      !phoneNumber
     ) {
       toast.error(
         t("ALL_FIELDS_REQUIRED_WARNING") || "Please fill in all fields",
       );
+      return;
+    }
+
+    if (phoneNumber.length !== 10) {
+      toast.error(t("INVALID_PHONE_NUMBER"));
       return;
     }
 
@@ -72,13 +84,10 @@ export default function RegisterPage() {
         fullname,
         email,
         identificationNumber,
+        phoneNumber: `+90${phoneNumber}`,
         password,
         confirmPassword,
       }).unwrap();
-
-      // toast.success(
-      //   t("REGISTRATION_SUCCESS") || "Account created successfully!",
-      // );
     } catch (err: any) {
       console.error(err?.data?.message || t("REGISTRATION_FAILED"));
     }
@@ -180,6 +189,37 @@ export default function RegisterPage() {
               className="w-full rounded-xl border border-slate-200 bg-white pl-11 pr-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
             />
           </div>
+        </div>
+
+        {/* Phone Number Field */}
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">
+            {t("PHONE_NUMBER_LABEL")}
+          </label>
+          <div className="relative group flex">
+            {/* Country Code Prefix */}
+            <div className="flex items-center gap-1.5 px-3 rounded-l-xl border border-r-0 border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-500 text-sm font-bold shrink-0">
+              🇹🇷 +90
+            </div>
+            <input
+              name="phoneNumber"
+              type="tel"
+              inputMode="numeric"
+              required
+              maxLength={10}
+              placeholder={t("PHONE_NUMBER_PLACEHOLDER")}
+              onInput={(e) => {
+                e.currentTarget.value = e.currentTarget.value.replace(
+                  /[^0-9]/g,
+                  "",
+                );
+              }}
+              className="w-full rounded-r-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium outline-none ring-brand/20 transition-all focus:border-brand focus:ring-4 dark:border-slate-800 dark:bg-slate-900 dark:text-white"
+            />
+          </div>
+          <p className="text-[10px] font-medium text-slate-400 ml-1">
+            {t("PHONE_NUMBER_HINT")}
+          </p>
         </div>
 
         {/* Password Field */}

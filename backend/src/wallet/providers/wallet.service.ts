@@ -7,19 +7,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { DataSource, Repository } from 'typeorm';
 import { ActiveUserInterface } from 'src/lib/types';
-import {
-  CreateDepositDto,
-  UpdateTransactionStatusDto,
-  WithdrawRequestDto,
-} from '../dtos';
+import { CreateDepositDto, WithdrawRequestDto } from '../dtos';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
 import { DEPOSIT_FOLDER } from 'src/lib/constants';
 import {
   Transactions,
   TransactionStatus,
   TransactionType,
 } from 'src/transactions/entities/transactions.entity';
+import { FileUploadProvider } from 'src/common/providers/FileUploader';
 
 @Injectable()
 export class WalletService {
@@ -29,7 +25,7 @@ export class WalletService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
     private readonly eventEmitter: EventEmitter2,
     private readonly dataSource: DataSource,
-    private readonly cloudinaryService: CloudinaryService,
+    private readonly fileUploader: FileUploadProvider,
   ) {}
 
   public async getHistory(
@@ -132,12 +128,16 @@ export class WalletService {
   ) {
     return await this.dataSource.transaction(async (manager) => {
       let receiptUrl: string | null = null;
+      let receiptPublicId: string | null = null;
       if (file) {
-        const uploadResult = await this.cloudinaryService.uploadImage(
-          file,
-          DEPOSIT_FOLDER,
+        const uploadResult = await this.fileUploader.uploadBuffer(
+          file.buffer,
+          'deposits',
+          `deposits_${activeUser?.email}`,
+          file.mimetype,
         );
-        receiptUrl = uploadResult.secure_url;
+        receiptUrl = uploadResult.url;
+        receiptPublicId = uploadResult.publicId;
       }
 
       const user = await manager.findOne(User, {
@@ -158,8 +158,12 @@ export class WalletService {
         balanceAfter: Number(user.balance),
         method: 'bank_transfer',
         reference: createDepositDto.bankAccountId,
+        receipt:
+          receiptPublicId && receiptUrl
+            ? { publicId: receiptPublicId, url: receiptUrl }
+            : null,
         notes: receiptUrl
-          ? `Deposit of ₺${createDepositDto.amount}. Receipt: ${receiptUrl}`
+          ? `Deposit of ₺${createDepositDto.amount}`
           : `Deposit of ₺${createDepositDto.amount}. Awaiting approval.`,
         user,
         position: undefined,
